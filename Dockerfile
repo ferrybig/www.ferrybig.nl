@@ -31,7 +31,7 @@ COPY /public /app/public
 COPY /content /app/content
 COPY /assets /app/assets
 COPY /md-compiler /app/md-compiler
-COPY next.config.mjs postcss.config.cjs postcssLightDarkPolyfill.cjs tsconfig.json .eslintrc.yml package.json /app/
+COPY next.config.mjs postcss.config.cjs postcssLightDarkPolyfill.cjs tsconfig.json eslint.config.mjs package.json /app/
 COPY --from=md-compiler /app/app /app/app
 
 FROM build-env as build
