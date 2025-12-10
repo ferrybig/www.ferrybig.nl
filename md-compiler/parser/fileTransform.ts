@@ -118,7 +118,7 @@ async function processFile(paths: string[], config: RunningConfig): Promise<Comp
 				tableOfContent,
 				slug,
 				file,
-				config
+				config,
 			);
 			const tags = [...data.tags];
 			const parentTag = path.split('/').slice(0, -2).join('/');

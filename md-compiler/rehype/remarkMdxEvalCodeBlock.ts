@@ -41,7 +41,7 @@ export function remarkMdxEvalCodeBlock(): Plugin<[any], any, any> {
 													body: [
 														...program.body.slice(
 															0,
-															-1
+															-1,
 														),
 														{
 															type: 'ReturnStatement',

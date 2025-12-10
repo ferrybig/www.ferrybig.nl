@@ -167,7 +167,7 @@ export default function ArticleWrapper({
 										<Link href={'/' + p.slug} aria-current={slug === p.slug}>
 											{p.title}
 										</Link>
-									</li>
+									</li>,
 								)}
 							</ul>
 						</nav>

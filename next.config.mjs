@@ -53,7 +53,7 @@ const nextConfig = {
 
 	webpack: (
 		config,
-		{ buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
+		{ dev },
 	) => {
 		// Important: return the modified config
 		config.module.rules.push({

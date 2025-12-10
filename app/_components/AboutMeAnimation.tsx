@@ -120,7 +120,7 @@ function AboutMeAnimation({ linkClassName }: AboutMeAnimation) {
 					onClick={next}
 				>
 					{text}
-				</span>
+				</span>,
 			);
 		} else {
 			children.push(text);

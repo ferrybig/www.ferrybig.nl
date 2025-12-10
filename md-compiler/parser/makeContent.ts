@@ -67,12 +67,12 @@ function arrayMappedSort<T>(items: T[], comparator: Comparator<T>): Comparator<n
 
 export default function makeContent(
 	results: Exclude<CompileResults, CompileResultsSubTasks>[],
-	{miniumForFeedGeneration}: RunningConfig
+	{miniumForFeedGeneration}: RunningConfig,
 ): Exclude<CompileResults, CompileResultsSubTasks>[] {
 	let importId = 0;
 	const importMap = new Map<string, string>();
 	const articles = results.filter(
-		(x): x is CompileResultsArticle => x.type === 'article'
+		(x): x is CompileResultsArticle => x.type === 'article',
 	);
 	const children: number[][] = [];
 	const topicIndex: number[] = [];
@@ -156,18 +156,18 @@ export default function makeContent(
 		comparing((e: CompileResultsArticle) => e.metadata.slug),
 	];
 	rootChildren.sort(arrayMappedSort(articles, comparingChain(
-		...defaultSort
+		...defaultSort,
 	)));
 	contentChildren.sort(arrayMappedSort(articles, comparingChain(
-		...defaultSort
+		...defaultSort,
 	)));
 	topicIndex.sort(arrayMappedSort(articles, comparingChain(
 		comparing((e: CompileResultsArticle) => e.metadata.topicIndex),
-		...defaultSort
+		...defaultSort,
 	)));
 	for (const list of children) {
 		list.sort(arrayMappedSort(articles, comparingChain(
-			...defaultSort
+			...defaultSort,
 		)));
 	}
 
@@ -222,7 +222,7 @@ export default function makeContent(
 
 	return [
 		...results.filter(
-			(x) => x.type !== 'article'
+			(x) => x.type !== 'article',
 		),
 		...newArticles,
 		{

@@ -19,7 +19,7 @@ export function GET() {
 				0.5 +
 					clamp(0, 0.3, readingTimeMax * 0.05 - 0.1) +
 					(slug === '' || !hasFeeds(id) ? 0 : -0.2) +
-					(summary ? 0 : -0.2)
+					(summary ? 0 : -0.2),
 			),
 		}));
 	let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';

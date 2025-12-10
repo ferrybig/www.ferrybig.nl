@@ -78,7 +78,7 @@ function ShareDialog({
 	}, []);
 	return (
 		<div className={show ? classes.webShareReady : classes.webShare} onClick={(e) => {
-			e.target === e.currentTarget && onClose();
+			if (e.target === e.currentTarget) onClose();
 		}}>
 			<div className={classes.webShareContainer}>
 				<div className={classes.webShareTitle}>SHARE VIA</div>
@@ -91,7 +91,7 @@ function ShareDialog({
 					const shareUrl = new URL(href);
 					shareUrl.searchParams.set('utm_source', title.toLowerCase());
 					return link ? (
-						<a key={title} href={link(shareUrl.href, pageTitle)} className={classes.webShareItem} target="_blank" rel="noopener" onClick={onClose}>
+						<a key={title} href={link(shareUrl.href, pageTitle)} className={classes.webShareItem} target="_blank" rel="noopener noreferrer" onClick={onClose}>
 							{children}
 						</a>
 					) : (
