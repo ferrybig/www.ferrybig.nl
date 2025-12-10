@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable no-redeclare */
 /* global module */
 module.exports = {
 	'extends': [

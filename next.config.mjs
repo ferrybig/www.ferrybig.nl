@@ -28,6 +28,9 @@ const nextConfig = {
 	experimental: {
 		gzipSize: true,
 	},
+	eslint: {
+		dirs: ['.'], //or ['pages', 'hooks']
+	},
 	async headers() {
 		return [
 			{

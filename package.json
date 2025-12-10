@@ -10,12 +10,12 @@
     "build-via-docker": "rm -fr out && docker build -t www.ferrybig.nl:files --target export . -o out",
     "start-frontend": "serve out -p 2999",
     "start": "docker build -t www.ferrybig.nl:server --target server . && docker --rm --name www.ferrybig.nl --publish 2999:2999 www.ferrybig.nl:server",
-    "lint": "next lint",
+    "lint": "eslint .",
     "tsc": "tsc --noEmit",
     "clean": "find app -name '*.js' -not -path '*/_components/*' -delete && find app -type d -empty -delete && rm -rf out app/.generated_files.txt app/content.d.ts && cd md-compiler && npm run clean"
   },
   "dependencies": {
-    "@giscus/react": "^3.0.0",
+    "@giscus/react": "^3.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "clsx": "^2.1.1",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
@@ -33,22 +33,23 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@types/web-app-manifest": "^1.0.8",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
-    "@typescript-eslint/typescript-estree": "^7.8.0",
-    "acorn": "^8.11.3",
+    "@types/node": "^24.10.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/web-app-manifest": "^1.0.9",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "@typescript-eslint/typescript-estree": "^8.49.0",
+    "acorn": "^8.15.0",
     "acorn-jsx": "^5.3.2",
     "concurrently": "^8.2.2",
-    "eslint": "^8",
-    "eslint-config-next": "14.1.0",
-    "eslint-plugin-react": "^7.34.0",
-    "postcss": "^8.4.35",
-    "postcss-preset-env": "^9.4.0",
-    "serve": "^14.2.3",
-    "typescript": "^5.4.5"
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.8",
+    "eslint-plugin-react": "^7.37.5",
+    "postcss": "^8.5.6",
+    "postcss-preset-env": "^10.5.0",
+    "serve": "^14.2.5",
+    "typescript": "^5.9.3"
   },
   "browserslist": [
     "> 0.2% and not dead"
