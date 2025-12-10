@@ -21,15 +21,12 @@ const nextConfig = {
 		unoptimized: true,
 	},
 	productionBrowserSourceMaps: true,
-	eslint: {
-		ignoreDuringBuilds: process.env.IGNORE_ERRORS === 'true',
-	},
 	typescript: {
 		ignoreBuildErrors: process.env.IGNORE_ERRORS === 'true',
 	},
+	reactCompiler: true,
 	experimental: {
-		reactCompiler: true,
-		gzipSize: false,
+		gzipSize: true,
 	},
 	async headers() {
 		return [
