@@ -10,7 +10,7 @@ export function Analytics() {
 	useEffect(() => {
 		if (!goatcounter.current) {
 			goatcounter.current = setupGoatCounter({
-				endpoint: 'https://analytics.ferrybig.me/count',
+				endpoint: 'https://analytics.ferrybig.nl/count',
 				no_onload: true,
 				allow_local: true,
 			});

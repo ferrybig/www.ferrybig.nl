@@ -48,9 +48,9 @@ function ArticleInfo({
 			<p className={classes.listItem}>
 				<strong>Tools:</strong>
 				{' '}
-				<a href={`https://github.com/ferrybig/www.ferrybig.me/commits/${GIT_BRANCH}${CONTENT_FOLDER}${originalFile}`}>View source</a>
+				<a href={`https://github.com/ferrybig/www.ferrybig.nl/commits/${GIT_BRANCH}${CONTENT_FOLDER}${originalFile}`}>View source</a>
 				{' '}
-				<a href={`https://github.com/ferrybig/www.ferrybig.me/edit/${GIT_BRANCH}${CONTENT_FOLDER}${originalFile}`}>Suggest edit</a>
+				<a href={`https://github.com/ferrybig/www.ferrybig.nl/edit/${GIT_BRANCH}${CONTENT_FOLDER}${originalFile}`}>Suggest edit</a>
 			</p>
 			<p className={classes.listItem}>
 				<Share slug={slug}/>

@@ -1,5 +1,5 @@
 {
-  "name": "www.ferrybig.me-v2",
+  "name": "www.ferrybig.nl-v2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,9 +7,9 @@
     "dev-frontend": "next dev -p 2999",
     "build": "cd md-compiler && npm --silent run build && cd .. && npm --silent run build-frontend",
     "build-frontend": "next build",
-    "build-via-docker": "rm -fr out && docker build -t www.ferrybig.me:files --target export . -o out",
+    "build-via-docker": "rm -fr out && docker build -t www.ferrybig.nl:files --target export . -o out",
     "start-frontend": "serve out -p 2999",
-    "start": "docker build -t www.ferrybig.me:server --target server . && docker --rm --name www.ferrybig.me --publish 2999:2999 www.ferrybig.me:server",
+    "start": "docker build -t www.ferrybig.nl:server --target server . && docker --rm --name www.ferrybig.nl --publish 2999:2999 www.ferrybig.nl:server",
     "lint": "next lint",
     "tsc": "tsc --noEmit",
     "clean": "find app -name '*.js' -not -path '*/_components/*' -delete && find app -type d -empty -delete && rm -rf out app/.generated_files.txt app/content.d.ts && cd md-compiler && npm run clean"

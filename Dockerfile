@@ -90,7 +90,7 @@ COPY <<Caddyfile /etc/caddy/Caddyfile
 		precompressed br
 	}
 	try_files {path}.html
-	header Content-Security-Policy "default-src 'self' analytics.ferrybig.me;script-src 'self' 'unsafe-eval' 'unsafe-inline';style-src 'self' 'unsafe-inline';img-src 'self' blob: data:;font-src 'self';object-src 'none';base-uri 'self';frame-src 'self' projects.ferrybig.me giscus.app;form-action 'self';frame-ancestors 'none';block-all-mixed-content;"
+	header Content-Security-Policy "default-src 'self' analytics.ferrybig.nl;script-src 'self' 'unsafe-eval' 'unsafe-inline';style-src 'self' 'unsafe-inline';img-src 'self' blob: data:;font-src 'self';object-src 'none';base-uri 'self';frame-src 'self' projects.ferrybig.nl giscus.app;form-action 'self';frame-ancestors 'none';block-all-mixed-content;"
 	header /giscus.css access-control-allow-origin https://giscus.app
 	header /_next/static/* Cache-Control max-age=31536000
 	handle_errors {

@@ -19,7 +19,7 @@ export function generateFeed(metadata: MetaData | null, children: MetaData[], fo
 		format: format,
 		posts: children,
 		subDirectory: metadata?.slug ?? '',
-		title: 'Posts under ' + (metadata?.slug ? metadata.title : 'www.ferrybig.me'),
+		title: 'Posts under ' + (metadata?.slug ? metadata.title : 'www.ferrybig.nl'),
 	});
 }
 export function generateMetadata({
@@ -54,7 +54,7 @@ export function generateMetadata({
 		authors: [
 			{
 				name: 'Fernando',
-				url: 'https://ferrybig.me',
+				url: 'https://ferrybig.nl',
 			},
 		],
 		formatDetection: {

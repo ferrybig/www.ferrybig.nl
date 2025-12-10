@@ -28,7 +28,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           outputs: type=local,dest=/tmp/files
-          tags: www.ferrybig.me:latest
+          tags: www.ferrybig.nl:latest
         env:
           SOURCE_DATE_EPOCH: 0
       - name: Upload artifact

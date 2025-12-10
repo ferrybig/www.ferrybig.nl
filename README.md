@@ -1,4 +1,4 @@
-[![Last deployment](https://github.com/ferrybig/www.ferrybig.me/actions/workflows/deploy.yml/badge.svg)](https://github.com/ferrybig/www.ferrybig.me/actions/workflows/deploy.yml)
+[![Last deployment](https://github.com/ferrybig/www.ferrybig.nl/actions/workflows/deploy.yml/badge.svg)](https://github.com/ferrybig/www.ferrybig.nl/actions/workflows/deploy.yml)
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 

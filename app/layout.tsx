@@ -21,12 +21,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-	metadataBase: new URL('https://ferrybig.me'),
-	title: 'Ferrybig.me',
+	metadataBase: new URL('https://ferrybig.nl'),
+	title: 'ferrybig.nl',
 	authors: [
 		{
 			name: 'Fernando',
-			url: 'https://ferrybig.me',
+			url: 'https://ferrybig.nl',
 		},
 	],
 	formatDetection:{

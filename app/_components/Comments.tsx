@@ -11,7 +11,7 @@ function Comments() {
 	return (
 		<div className={classes.root}>
 			{baseUrl && <Giscus
-				repo="ferrybig/www.ferrybig.me"
+				repo="ferrybig/www.ferrybig.nl"
 				repoId="R_kgDOHBif1g="
 				category="Announcements"
 				categoryId="DIC_kwDOHBif1s4CdpTo"

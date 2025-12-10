@@ -3,7 +3,7 @@ date: "2019-07-10"
 tags: ["tech", "from-scratch"]
 thumbnail:
     image: thumbnail.png
-    embed: https://projects.ferrybig.me/breakout-modules/
+    embed: https://projects.ferrybig.nl/breakout-modules/
     link: https://github.com/ferrybig/breakout-modules/
     alt: The resulting breakout game
 ---

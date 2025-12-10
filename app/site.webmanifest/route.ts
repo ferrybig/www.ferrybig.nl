@@ -4,7 +4,7 @@ import type { WebAppManifest } from 'web-app-manifest';
 
 export function GET() {
 	const manifest: WebAppManifest = {
-		name: 'ferrybig.me',
+		name: 'ferrybig.nl',
 		short_name: 'ferrybig',
 		display: 'browser',
 		icons: [

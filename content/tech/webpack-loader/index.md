@@ -74,4 +74,4 @@ applies the git modification date as an export to the  generated javascript file
 ## Examples
 
 * [My own custom json-tagger-file-loader](https://github.com/ferrybig/json-tagged-file-loader)
-* [Loader that embeds the git creation and updated times during the build](https://github.com/ferrybig/www.ferrybig.me/blob/master/git-annotate-loader.cjs)
+* [Loader that embeds the git creation and updated times during the build](https://github.com/ferrybig/www.ferrybig.nl/blob/master/git-annotate-loader.cjs)
