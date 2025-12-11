@@ -6,7 +6,7 @@ import setupGoatCounter from './Analytics.goatcounter';
 
 export function Analytics() {
 	const path = usePathname();
-	const goatcounter = useRef<ReturnType<typeof setupGoatCounter>>();
+	const goatcounter = useRef<ReturnType<typeof setupGoatCounter>>(undefined);
 	useEffect(() => {
 		if (!goatcounter.current) {
 			goatcounter.current = setupGoatCounter({

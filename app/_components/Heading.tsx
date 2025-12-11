@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, JSX } from 'react';
 import classes from './Heading.module.css';
 import classNames from 'clsx';
 
