@@ -31,10 +31,11 @@ COPY /public /app/public
 COPY /content /app/content
 COPY /assets /app/assets
 COPY /md-compiler /app/md-compiler
-COPY next.config.mjs postcss.config.cjs postcssLightDarkPolyfill.cjs tsconfig.json eslint.config.mjs next-env.d.ts package.json /app/
+COPY next.config.mjs postcss.config.cjs postcssLightDarkPolyfill.cjs tsconfig.json eslint.config.mjs package.json /app/
 COPY --from=md-compiler /app/app /app/app
 
 FROM build-env AS build
+RUN cd /app && npx next typegen
 RUN cd /app && npm run lint && npm run tsc
 RUN --mount=type=cache,target=/app/.next/cache cd /app && IGNORE_ERRORS=true npm run build-frontend
 
