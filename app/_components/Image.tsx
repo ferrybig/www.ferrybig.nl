@@ -41,7 +41,7 @@ function ImageLoader({
 			{/* eslint-disable-next-line react/forbid-elements */}
 			<img
 				src={src.src}
-				style={blur ? {background: `url('${src.blurDataURL}') 50% 50% / cover`} : undefined}
+				style={blur && src.blurDataURL ? {background: `url('${src.blurDataURL}') 50% 50% / cover`} : undefined}
 				decoding={decoding}
 				alt={alt}
 				width={width ?? (height ? Number.parseInt(`${height}`) / src.height * src.width : undefined) ?? src.width}
