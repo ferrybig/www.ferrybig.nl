@@ -111,6 +111,30 @@
 	aspect-ratio: auto;
 	height: auto;
 }
+/* A wide table should scroll on its own rather than widen the article. */
+.markdown table {
+	display: block;
+	overflow-x: auto;
+	max-width: 100%;
+	width: fit-content;
+	border-collapse: collapse;
+	margin: 16px 0;
+}
+.markdown th,
+.markdown td {
+	padding: 6px 12px;
+	text-align: left;
+	vertical-align: top;
+	border: 1px solid light-dark(#dddddd, #333333);
+}
+.markdown thead th {
+	background: light-dark(#f4f4f4, #1c1c1c);
+	font-weight: 600;
+	white-space: nowrap;
+}
+.markdown tbody tr:nth-child(even) {
+	background: light-dark(#fafafa, #181818);
+}
 
 .rootShort {
 	composes: root;
