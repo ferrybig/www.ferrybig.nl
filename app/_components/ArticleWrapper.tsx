@@ -29,6 +29,7 @@ export function generateMetadata({
 		title,
 		tags,
 		thumbnail,
+		coAuthors,
 	},
 }: ArticleWrapperProps): Metadata | Promise<Metadata> {
 	return {
@@ -56,6 +57,7 @@ export function generateMetadata({
 				name: 'Fernando',
 				url: 'https://ferrybig.nl',
 			},
+			...coAuthors.map(({ name, url }) => url === null ? { name } : { name, url }),
 		],
 		formatDetection: {
 			address: false,
@@ -78,6 +80,7 @@ export default function ArticleWrapper({
 		readingTimeMin,
 		readingTimeMax,
 		commentStatus,
+		coAuthors,
 	},
 	toc,
 	factory,
@@ -105,6 +108,7 @@ export default function ArticleWrapper({
 							tags={tags}
 							updatedAt={updatedAt}
 							feeds={feeds}
+							coAuthors={coAuthors}
 						/>
 					</Column>
 					<div className={classes.tocWrapper}>

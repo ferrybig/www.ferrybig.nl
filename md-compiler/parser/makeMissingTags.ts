@@ -33,6 +33,7 @@ export default function makeMissingTags(results: Exclude<CompileResults, Compile
 						excludeFromChildren: false,
 						childrenLayout: 'list',
 						summary: null,
+						coAuthors: [],
 						title: titleCase(tag),
 						linkTitle: titleCase(tag),
 						children: 'auto',

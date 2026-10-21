@@ -1,3 +1,4 @@
+import type { MetaData } from '@/content';
 import classes from './ArticleInfo.module.css';
 import Date from './Date';
 import Share from './Share';
@@ -13,6 +14,7 @@ interface ArticleInfo {
 	updatedAt: string | null,
 	originalFile: string | null,
 	feeds: boolean,
+	coAuthors: MetaData['coAuthors'],
 }
 function ArticleInfo({
 	date,
@@ -23,6 +25,7 @@ function ArticleInfo({
 	updatedAt,
 	originalFile,
 	feeds,
+	coAuthors,
 }: ArticleInfo) {
 	return (
 		<div className={classes.root}>
@@ -36,6 +39,18 @@ function ArticleInfo({
 				<strong>Last update:</strong>
 				{' '}
 				<Date timestamp={updatedAt}/>
+			</p>}
+			{coAuthors.length > 0 && <p className={classes.listItem}>
+				<strong>Co-author{coAuthors.length === 1 ? '' : 's'}:</strong>
+				{' '}
+				{coAuthors.map((coAuthor, index) => (
+					<span key={coAuthor.name}>
+						{index === 0 ? '' : ', '}
+						{coAuthor.url
+							? <a href={coAuthor.url}>{coAuthor.name}</a>
+							: coAuthor.name}
+					</span>
+				))}
 			</p>}
 			<p className={classes.listItem}>
 				<strong>Reading time:</strong>

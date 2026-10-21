@@ -22,6 +22,10 @@ const ARTICLE_DATA = z.object({
 	commentStatus: z.optional(z.enum(['open', 'closed', 'disabled'])),
 	children: z.optional(z.enum(['auto', 'root', 'content'])).default('auto'),
 	linkTitle: z.optional(z.string()),
+	coAuthors: z.optional(z.array(z.object({
+		name: z.string(),
+		url: z.optional(z.string()),
+	}).or(z.string()))).default([]),
 	date: z.optional(z.string()),
 	color: z.optional(z.string()),
 	icon: z.optional(z.string()),
@@ -159,6 +163,10 @@ async function processFile(paths: string[], config: RunningConfig): Promise<Comp
 					excludeFromChildren: data.excludeFromChildren,
 					title: tableOfContent[0]?.title ?? path.split('/').slice(0, -1).join('/'),
 					linkTitle: data.linkTitle ?? tableOfContent[0]?.title ?? path.split('/').slice(0, -1).join('/'),
+					coAuthors: data.coAuthors.map(coAuthor => typeof coAuthor === 'string'
+						? { name: coAuthor, url: null }
+						: { name: coAuthor.name, url: coAuthor.url ?? null },
+					),
 					updatedAt: new Date(modificationTime).toISOString(),
 					summary: readSummary(tree),
 					childrenLayout: data.childrenLayout ?? null,

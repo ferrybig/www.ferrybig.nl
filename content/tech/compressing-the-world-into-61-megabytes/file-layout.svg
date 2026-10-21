@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 508" width="820" height="508" role="img" aria-label="The four sections of a CGEODATA file: a fixed header, a directory of section lengths, a place table of names, and 16384 independently compressed chunks, of which 7608 hold data.">
+	<title>CGEODATA file layout</title>
+	<style>
+		text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1a1d23; }
+		.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+		.ttl { font-size: 15px; font-weight: 700; }
+		.meta { font-size: 12px; fill: #5d6675; }
+		.band { font-size: 13px; font-weight: 600; }
+		.size { font-size: 11px; fill: #5d6675; }
+		.field { font-size: 12px; }
+		.note { font-size: 12px; fill: #5d6675; }
+		.bg { fill: #ffffff; }
+		.box { fill: #f4f5f7; stroke: #c3c9d2; stroke-width: 1; }
+		.boxAlt { fill: #e9ebef; stroke: #c3c9d2; stroke-width: 1; }
+		.conn { stroke: #c3c9d2; stroke-width: 1; fill: none; }
+		.accentBar { fill: #a8322b; }
+
+		@media (prefers-color-scheme: dark) {
+			text { fill: #e9ebee; }
+			.meta, .size, .note { fill: #9ba4b2; }
+			.bg { fill: #111111; }
+			.box { fill: #1c1f25; stroke: #434a56; }
+			.boxAlt { fill: #262a32; stroke: #434a56; }
+			.conn { stroke: #434a56; }
+			.accentBar { fill: #e8776b; }
+		}
+	</style>
+
+	<rect class="bg" x="0" y="0" width="820" height="508"/>
+
+	<text class="ttl" x="0" y="14">CGEODATA file layout</text>
+	<text class="meta" x="820" y="14" text-anchor="end">world-high-res.bin · 64,244,778 bytes · heights not to scale</text>
+
+	<!-- ============ Header ============ -->
+	<line class="conn" x1="165" y1="94" x2="200" y2="94"/>
+	<rect class="box" x="0" y="40" width="165" height="108" rx="3"/>
+	<rect class="accentBar" x="0" y="40" width="4" height="108"/>
+	<text class="band" x="16" y="62">Header</text>
+	<text class="size" x="16" y="78">192 bytes</text>
+	<text class="size" x="16" y="94">uncompressed</text>
+
+	<rect class="boxAlt" x="200" y="40" width="620" height="108" rx="3"/>
+	<text class="mono field" x="216" y="62">signature</text><text class="field" x="394" y="62">the 8 ASCII bytes <tspan class="mono">CGEODATA</tspan></text>
+	<text class="mono field" x="216" y="80">version</text><text class="field" x="394" y="80">file kind × 16 + version, one byte does both</text>
+	<text class="mono field" x="216" y="98">attribution</text><text class="field" x="394" y="98">licence text, shown to humans</text>
+	<text class="mono field" x="216" y="116">width_exp, height_exp</text><text class="field" x="394" y="116">7, 7 → a 128 × 128 grid of chunks</text>
+	<text class="mono field" x="216" y="134">max_depth</text><text class="field" x="394" y="134">10 → 1024 × 1024 cells inside each chunk</text>
+
+	<!-- ============ Directory ============ -->
+	<line class="conn" x1="165" y1="179" x2="200" y2="179"/>
+	<rect class="box" x="0" y="154" width="165" height="50" rx="3"/>
+	<rect class="accentBar" x="0" y="154" width="4" height="50"/>
+	<text class="band" x="16" y="176">Directory</text>
+	<text class="size" x="16" y="192">23,194 bytes</text>
+
+	<rect class="boxAlt" x="200" y="154" width="620" height="50" rx="3"/>
+	<text class="mono field" x="216" y="176">place_table_length</text><text class="field" x="372" y="176">where the chunks start</text>
+	<text class="mono field" x="216" y="194">chunk_lengths[16384]</text><text class="field" x="372" y="194">one varint each; <tspan class="mono">0</tspan> means nothing there (8,776 of them)</text>
+
+	<!-- ============ Place table ============ -->
+	<line class="conn" x1="165" y1="251" x2="200" y2="251"/>
+	<rect class="box" x="0" y="210" width="165" height="82" rx="3"/>
+	<rect class="accentBar" x="0" y="210" width="4" height="82"/>
+	<text class="band" x="16" y="232">Place table</text>
+	<text class="size" x="16" y="248">2,000,931 bytes</text>
+	<text class="size" x="16" y="264">3.1% of the file</text>
+	<text class="size" x="16" y="280">274,171 places</text>
+
+	<rect class="boxAlt" x="200" y="210" width="620" height="82" rx="3"/>
+	<text class="mono field" x="216" y="232">country_count</text><text class="field" x="372" y="232">239</text>
+	<text class="mono field" x="216" y="250">region_counts[239]</text><text class="field" x="372" y="250">regions per country, 4,949 in total</text>
+	<text class="mono field" x="216" y="268">city_counts[4949]</text><text class="field" x="372" y="268">cities per region, 268,983 in total</text>
+	<text class="mono field" x="216" y="286">name_blocks[…]</text><text class="field" x="372" y="286">128 NUL-separated names per zlib stream</text>
+
+	<!-- ============ Chunks ============ -->
+	<line class="conn" x1="165" y1="373" x2="200" y2="373"/>
+	<rect class="box" x="0" y="298" width="165" height="36" rx="3"/>
+	<rect class="accentBar" x="0" y="298" width="4" height="36"/>
+	<text class="band" x="16" y="321">Chunk 0</text>
+	<rect class="box" x="0" y="340" width="165" height="36" rx="3"/>
+	<rect class="accentBar" x="0" y="340" width="4" height="36"/>
+	<text class="band" x="16" y="363">Chunk 1</text>
+	<text class="band" x="20" y="399">⋮</text>
+	<rect class="box" x="0" y="412" width="165" height="36" rx="3"/>
+	<rect class="accentBar" x="0" y="412" width="4" height="36"/>
+	<text class="band" x="16" y="435">Chunk 16383</text>
+	<text class="size" x="0" y="466">62,220,461 bytes, 96.8% of the file</text>
+
+	<rect class="boxAlt" x="200" y="298" width="620" height="150" rx="3"/>
+	<text class="band" x="216" y="320">One chunk <tspan class="note">(repeated 16,384 times, 7,608 of them non-empty)</tspan></text>
+	<line class="conn" x1="200" y1="330" x2="820" y2="330"/>
+	<text class="mono field" x="216" y="350">palette_count</text><text class="field" x="372" y="350">how many distinct places this chunk mentions</text>
+	<text class="mono field" x="216" y="368">palette[P]</text><text class="field" x="372" y="368">their place ids, sorted, delta-coded varints</text>
+	<text class="mono field" x="216" y="386">record_count</text><text class="field" x="372" y="386">how many leaf cells this chunk stores</text>
+	<text class="mono field" x="216" y="404">codes[M]</text><text class="field" x="372" y="404">Morton codes, sorted, delta-coded varints</text>
+	<text class="mono field" x="216" y="422">depths[M]</text><text class="field" x="372" y="422">one byte per cell: how deep the quadtree went</text>
+	<text class="mono field" x="216" y="440">palette_indices[M]</text><text class="field" x="372" y="440">one small integer per cell, into <tspan class="mono">palette</tspan></text>
+
+	<text class="note" x="0" y="494">Three parallel arrays, not a list of records, which is most of why this compresses at all. Each chunk is its own zlib stream.</text>
+</svg>
