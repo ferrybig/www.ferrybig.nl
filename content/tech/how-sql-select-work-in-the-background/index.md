@@ -2,7 +2,7 @@
 date: "2025-08-12"
 tags: ["tech", "sql"]
 ---
-# How SQL selects execution in the background
+# How SQL selects work in the background
 
 SQL queries are typically seen as something magical, but understanding how they get executed behind the scenes helps you in debugging them. SQL engines typically apply a lot of optimizations in the background to speed them up, but understanding the simple model still helps you to know why something happens and even allows you to build your own SQL like engines
 
