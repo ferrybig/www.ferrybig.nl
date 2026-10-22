@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" width="820" height="580" role="img" aria-label="A quadtree over one chunk. Cells well inside one city stay large, the cells a boundary runs through are split to the depth limit, and four children that all resolve to the same place collapse back into their parent. The 16 resulting leaf cells are stored as three parallel arrays: delta-coded Morton codes, depths and palette indices.">
-	<title>From quadtree leaves to three sorted arrays</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" width="820" height="580" role="img" aria-label="A quadtree over one chunk. Cells well inside one city stay large, the cells a boundary runs through are split to the depth limit, and four children that all resolve to the same place collapse back into their parent. The 16 resulting leaf cells are stored as two parallel arrays: depths and palette indices. Their Morton codes are not stored at all, since each record starts exactly where the one before it ends.">
+	<title>From quadtree leaves to two arrays, in record order</title>
 	<style>
 		text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1a1d23; }
 		.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
@@ -92,67 +92,47 @@
 
 	<line class="sep" x1="0" y1="358" x2="820" y2="358"/>
 
-	<!-- ===================== bottom: the three arrays ===================== -->
-	<text class="sub" x="0" y="382">Written out as three parallel arrays, never as 16 records</text>
+	<!-- ===================== bottom: the two arrays ===================== -->
+	<text class="sub" x="0" y="382">Written out as two parallel arrays, never as 16 records</text>
 
-	<text class="note" x="0" y="406">codes, delta-coded</text>
+	<text class="note" x="0" y="406">depths</text>
 	<g class="mono row" text-anchor="middle">
-		<rect class="byte" x="0"   y="412" width="35" height="22"/><text x="17.5"  y="427">0</text>
-		<rect class="byte" x="37"  y="412" width="35" height="22"/><text x="54.5"  y="427">16</text>
-		<rect class="byte" x="74"  y="412" width="35" height="22"/><text x="91.5"  y="427">1</text>
-		<rect class="byte" x="111" y="412" width="35" height="22"/><text x="128.5" y="427">1</text>
-		<rect class="byte" x="148" y="412" width="35" height="22"/><text x="165.5" y="427">1</text>
-		<rect class="byte" x="185" y="412" width="35" height="22"/><text x="202.5" y="427">1</text>
-		<rect class="byte" x="222" y="412" width="35" height="22"/><text x="239.5" y="427">4</text>
-		<rect class="byte" x="259" y="412" width="35" height="22"/><text x="276.5" y="427">4</text>
-		<rect class="byte" x="296" y="412" width="35" height="22"/><text x="313.5" y="427">4</text>
-		<rect class="byte" x="333" y="412" width="35" height="22"/><text x="350.5" y="427">16</text>
-		<rect class="byte" x="370" y="412" width="35" height="22"/><text x="387.5" y="427">1</text>
-		<rect class="byte" x="407" y="412" width="35" height="22"/><text x="424.5" y="427">1</text>
-		<rect class="byte" x="444" y="412" width="35" height="22"/><text x="461.5" y="427">1</text>
-		<rect class="byte" x="481" y="412" width="35" height="22"/><text x="498.5" y="427">1</text>
-		<rect class="byte" x="518" y="412" width="35" height="22"/><text x="535.5" y="427">4</text>
-		<rect class="byte" x="555" y="412" width="35" height="22"/><text x="572.5" y="427">4</text>
+		<rect class="byte" x="0"   y="412" width="35" height="22"/><text x="17.5"  y="427">1</text>
+		<rect class="byte" x="37"  y="412" width="35" height="22"/><text x="54.5"  y="427">3</text>
+		<rect class="byte" x="74"  y="412" width="35" height="22"/><text x="91.5"  y="427">3</text>
+		<rect class="byte" x="111" y="412" width="35" height="22"/><text x="128.5" y="427">3</text>
+		<rect class="byte" x="148" y="412" width="35" height="22"/><text x="165.5" y="427">3</text>
+		<rect class="byte" x="185" y="412" width="35" height="22"/><text x="202.5" y="427">2</text>
+		<rect class="byte" x="222" y="412" width="35" height="22"/><text x="239.5" y="427">2</text>
+		<rect class="byte" x="259" y="412" width="35" height="22"/><text x="276.5" y="427">2</text>
+		<rect class="byte" x="296" y="412" width="35" height="22"/><text x="313.5" y="427">1</text>
+		<rect class="byte" x="333" y="412" width="35" height="22"/><text x="350.5" y="427">3</text>
+		<rect class="byte" x="370" y="412" width="35" height="22"/><text x="387.5" y="427">3</text>
+		<rect class="byte" x="407" y="412" width="35" height="22"/><text x="424.5" y="427">3</text>
+		<rect class="byte" x="444" y="412" width="35" height="22"/><text x="461.5" y="427">3</text>
+		<rect class="byte" x="481" y="412" width="35" height="22"/><text x="498.5" y="427">2</text>
+		<rect class="byte" x="518" y="412" width="35" height="22"/><text x="535.5" y="427">2</text>
+		<rect class="byte" x="555" y="412" width="35" height="22"/><text x="572.5" y="427">2</text>
 	</g>
 
-	<text class="note" x="0" y="456">depths</text>
+	<text class="note" x="0" y="456">palette indices</text>
 	<g class="mono row" text-anchor="middle">
 		<rect class="byte" x="0"   y="462" width="35" height="22"/><text x="17.5"  y="477">1</text>
-		<rect class="byte" x="37"  y="462" width="35" height="22"/><text x="54.5"  y="477">3</text>
-		<rect class="byte" x="74"  y="462" width="35" height="22"/><text x="91.5"  y="477">3</text>
-		<rect class="byte" x="111" y="462" width="35" height="22"/><text x="128.5" y="477">3</text>
-		<rect class="byte" x="148" y="462" width="35" height="22"/><text x="165.5" y="477">3</text>
+		<rect class="byte" x="37"  y="462" width="35" height="22"/><text x="54.5"  y="477">1</text>
+		<rect class="byte" x="74"  y="462" width="35" height="22"/><text x="91.5"  y="477">2</text>
+		<rect class="byte" x="111" y="462" width="35" height="22"/><text x="128.5" y="477">1</text>
+		<rect class="byte" x="148" y="462" width="35" height="22"/><text x="165.5" y="477">2</text>
 		<rect class="byte" x="185" y="462" width="35" height="22"/><text x="202.5" y="477">2</text>
-		<rect class="byte" x="222" y="462" width="35" height="22"/><text x="239.5" y="477">2</text>
+		<rect class="byte" x="222" y="462" width="35" height="22"/><text x="239.5" y="477">1</text>
 		<rect class="byte" x="259" y="462" width="35" height="22"/><text x="276.5" y="477">2</text>
 		<rect class="byte" x="296" y="462" width="35" height="22"/><text x="313.5" y="477">1</text>
-		<rect class="byte" x="333" y="462" width="35" height="22"/><text x="350.5" y="477">3</text>
-		<rect class="byte" x="370" y="462" width="35" height="22"/><text x="387.5" y="477">3</text>
-		<rect class="byte" x="407" y="462" width="35" height="22"/><text x="424.5" y="477">3</text>
-		<rect class="byte" x="444" y="462" width="35" height="22"/><text x="461.5" y="477">3</text>
+		<rect class="byte" x="333" y="462" width="35" height="22"/><text x="350.5" y="477">1</text>
+		<rect class="byte" x="370" y="462" width="35" height="22"/><text x="387.5" y="477">2</text>
+		<rect class="byte" x="407" y="462" width="35" height="22"/><text x="424.5" y="477">1</text>
+		<rect class="byte" x="444" y="462" width="35" height="22"/><text x="461.5" y="477">2</text>
 		<rect class="byte" x="481" y="462" width="35" height="22"/><text x="498.5" y="477">2</text>
 		<rect class="byte" x="518" y="462" width="35" height="22"/><text x="535.5" y="477">2</text>
 		<rect class="byte" x="555" y="462" width="35" height="22"/><text x="572.5" y="477">2</text>
-	</g>
-
-	<text class="note" x="0" y="506">palette indices</text>
-	<g class="mono row" text-anchor="middle">
-		<rect class="byte" x="0"   y="512" width="35" height="22"/><text x="17.5"  y="527">1</text>
-		<rect class="byte" x="37"  y="512" width="35" height="22"/><text x="54.5"  y="527">1</text>
-		<rect class="byte" x="74"  y="512" width="35" height="22"/><text x="91.5"  y="527">2</text>
-		<rect class="byte" x="111" y="512" width="35" height="22"/><text x="128.5" y="527">1</text>
-		<rect class="byte" x="148" y="512" width="35" height="22"/><text x="165.5" y="527">2</text>
-		<rect class="byte" x="185" y="512" width="35" height="22"/><text x="202.5" y="527">2</text>
-		<rect class="byte" x="222" y="512" width="35" height="22"/><text x="239.5" y="527">1</text>
-		<rect class="byte" x="259" y="512" width="35" height="22"/><text x="276.5" y="527">2</text>
-		<rect class="byte" x="296" y="512" width="35" height="22"/><text x="313.5" y="527">1</text>
-		<rect class="byte" x="333" y="512" width="35" height="22"/><text x="350.5" y="527">1</text>
-		<rect class="byte" x="370" y="512" width="35" height="22"/><text x="387.5" y="527">2</text>
-		<rect class="byte" x="407" y="512" width="35" height="22"/><text x="424.5" y="527">1</text>
-		<rect class="byte" x="444" y="512" width="35" height="22"/><text x="461.5" y="527">2</text>
-		<rect class="byte" x="481" y="512" width="35" height="22"/><text x="498.5" y="527">2</text>
-		<rect class="byte" x="518" y="512" width="35" height="22"/><text x="535.5" y="527">2</text>
-		<rect class="byte" x="555" y="512" width="35" height="22"/><text x="572.5" y="527">2</text>
 	</g>
 
 	<rect class="hl" x="620" y="406" width="200" height="128" rx="3"/>

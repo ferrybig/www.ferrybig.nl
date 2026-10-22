@@ -9,9 +9,9 @@ thumbnail:
     link: https://geodata.ferrybig.nl/
     alt: Netherlands as mapped by this tool
 ---
-# Compressing the cities of the world into a mere 61 megabytes
+# Compressing the cities of the world into a mere 45 megabytes
 
-I started [loc-to-city](https://github.com/ferrybig/loc-to-city) because my favorite photo manager kept telling me the wrong city. It has since turned into something I keep reaching for in other projects, so this post is about the tool and the file format it produces, not about the photo manager. The headline I still find hard to believe: every country, region and city boundary on Earth, at a resolution of roughly 300 by 150 metres, in a single 61 MB file that answers a lookup without ever reading more than a small slice of it.
+I started [loc-to-city](https://github.com/ferrybig/loc-to-city) because my favorite photo manager kept telling me the wrong city. It has since turned into something I keep reaching for in other projects, so this post is about the tool and the file format it produces, not about the photo manager. The headline I still find hard to believe: every country, region and city boundary on Earth, at a resolution of roughly 300 by 150 metres, in a single 45 MB file that answers a lookup without ever reading more than a small slice of it.
 
 Every colleague I showed this to guessed the file would be ten to a hundred times bigger, so somewhere between 700 MB and 7 GB. That is a fair guess for the obvious approaches: shipping the polygons themselves costs 1 to 10 GB depending on how much they are simplified, and my own build pipeline carries 5.5 GB of them as its intermediate form.
 
@@ -87,11 +87,11 @@ The condition for stopping is worth being precise about. It is not "one place wi
 
 Then number every leaf cell with its [Morton code](https://en.wikipedia.org/wiki/Z-order_curve) (interleave the bits of its row and column) and sort. Morton order is quadtree order, so a sorted list of codes *is* the tree, and a lookup is one binary search over integers.
 
-![A quadtree over a single chunk, and the three parallel arrays it is stored as](quadtree-to-columns.svg "How one chunk gets small")
+![A quadtree over a single chunk, and the two parallel arrays it is stored as](quadtree-to-columns.svg "How one chunk gets small")
 
 The thing that makes this cheap is in the left half of that picture. A record costs the same whether it covers one cell or a quarter of the chunk, so the inside of a city is nearly free, and only the boundary is expensive. Boundaries are one-dimensional and area is two-dimensional, so we end up paying for the perimeter of the world's cities rather than for their surface.
 
-Step 5 in that picture was not there a week ago, and it is the reason this post is titled 61 and not 72.
+Step 5 in that picture was not there when I first drew it, and it is why the file was already smaller by the time anyone but me had read this post.
 
 I drew an earlier version of this diagram from memory and got it wrong: I showed a cell with the boundary clipping one corner as a single large record, because I assumed the rule was "one place wins the cell". It isn't. Any boundary passing through a cell splits it, so a border is a band of finest cells, not a staircase of big ones. Fixing the drawing meant reading the subdivision code properly, and that turned up something else: **once a cell had been split, its children were never merged back.** Four siblings that all resolved to the same place stayed four records, even though the parent cell covers exactly the same ground and gives exactly the same answer.
 
@@ -110,7 +110,22 @@ zlib's loss on the shortened runs is real but small next to the win from droppin
 
 The subtle part is the condition. It is not enough that four children each came back as a single record for the same place; they must each be a record *at the child depth*. A child that only one place touches a corner of also comes back as exactly one record, but a smaller and deeper one, and merging four of those hands the place all the empty cells in between. On the first worldwide build that invented 88,542 records of ocean, caught only because the output disagreed with an independent simulation by exactly that count.
 
-## How does 17 billion cells fit in 61 MB?
+Drawing that diagram made me look at the bottom row longer than I meant to. Nearly every stored code was simply the end of the record before it: the next one picks up exactly where the previous cell's span ran out. The only thing that ever broke the pattern was a gap, a stretch of unplaced cells between two records. Make the gap an explicit record instead of a silent skip, and there is nothing left for the codes array to say that the depths array does not already say: a reader can get a cell's code by walking the chunk and adding up depths as it goes.
+
+That became [CGEODATA version 1](https://github.com/ferrybig/loc-to-city/pull/7): the codes array is gone, and an empty stretch of cells is now an explicit "no place" record instead of a silent skip. Measured on the real rebuilt file, not a prototype:
+
+```
+             v0, codes stored   v1, codes derived
+records          106,377,942          110,148,645    +3.5%
+bytes             64,244,778           47,620,804   -25.9%
+chunk bytes       62,220,461           45,596,905   -26.7%
+```
+
+The extra 3,770,703 records are the gaps, which used to cost nothing and now cost one record each. They are cheap anyway: a long run of identical depths and index-0 palette indices is exactly what zlib likes. Losing the codes array outright pays for them several times over.
+
+I gave version 1 chunks the same WebAssembly decoder version 0 already had, then reverted it a day later. Measured across the whole file, deriving codes in WebAssembly instead of plain JavaScript saved about 16 microseconds per chunk, not enough to justify a second compiled decoder and its own fuzz tests. Version 0 files still decode through WebAssembly; version 1 does not. The honest cost of that shows up in a cold lookup: Paris, which used to resolve in 9.5 ms, now takes about 13 ms, because the arithmetic a compiled module used to do now runs as plain JavaScript on every chunk a query happens to land in. The file got smaller and a cold query got slower, in the same release.
+
+## How does 17 billion cells fit in 45 MB?
 
 Let me do the arithmetic that makes this sound impossible first.
 
@@ -120,14 +135,14 @@ The worldwide file uses a 128 × 128 grid of chunks and a quadtree depth of 10, 
 17,179,869,184 cells × 19 bits = about 40 GB
 ```
 
-Nobody would ship that, and it is not what the 1 to 10 GB above refers to. It is just the upper bound the grid starts from, before any of the structure below is applied. The actual file is 64,244,778 bytes, so **635 times smaller** than the dense grid, and 85 times smaller than the 5.5 GB of polygons it was built from.
+Nobody would ship that, and it is not what the 1 to 10 GB above refers to. It is just the upper bound the grid starts from, before any of the structure below is applied. The actual file is 47,620,804 bytes, so **857 times smaller** than the dense grid, and 115 times smaller than the 5.5 GB of polygons it was built from.
 
-Where does it go? The quadtree collapses those 17.18 billion cells into **106,377,942 leaf records**, a factor of 161 on its own. Then those records are stored in 64.2 MB, which works out to **0.60 bytes per record**: a Morton code, a depth and a place reference, in well under one byte each.
+Where does it go? The quadtree collapses those 17.18 billion cells into **110,148,645 records on disk** — 106,377,942 real places plus 3,770,703 explicit gaps, now that a gap needs its own record rather than a skipped code — a factor of 156 on its own. Then those records are stored in 47.6 MB, which works out to **0.43 bytes per record**: a depth and a place reference, well under half a byte each.
 
 Three things get us there. The prototype measured the last two on a 954,497-record dataset, so I can put real numbers on them:
 
 1. **Don't store cells, store leaves.** The quadtree collapses every uniform area into one record. This is the big one, and it is the one that makes the other two possible.
-2. **Delta-code the sorted codes as varints.** Consecutive Morton codes are close together, so most deltas fit in one or two bytes instead of a fixed eight. The code stream went from 7.6 MB to under 1 MB, and the whole blob from 7,744,895 bytes to 3,824,888.
+2. **Delta-code the sorted codes as varints.** Consecutive Morton codes are close together, so most deltas fit in one or two bytes instead of a fixed eight. The code stream went from 7.6 MB to under 1 MB, and the whole blob from 7,744,895 bytes to 3,824,888. (The shipped format has since gone one step further and dropped codes from storage entirely — covered above.)
 3. **Then zlib it.** 632,143 bytes, 12× smaller than the naive fixed-width encoding.
 
 The step I did not expect to matter is hiding in there, and it does not show up on its own: **storing the three arrays separately rather than as a list of records.** That change is free. The same numbers go into the file in the same order, just grouped by kind instead of by record, so it saves nothing at all before compression. What it does is put all the depths next to each other, and all the palette indices next to each other, and all the small deltas next to each other, so the compressor finally has runs to find instead of a stream of interleaved unrelated bytes. Reordering nothing is what made step 3 worth 6×.
@@ -146,7 +161,7 @@ Four sections, no padding, no trailer.
 
 The directory is the part that makes partial reads work. It lists the byte length of every chunk, in order, so a reader sums the prefix once at load time and then knows exactly where any chunk lives. A length of `0` means that chunk is empty and nothing is stored for it at all, which is how the oceans cost almost nothing: 8,776 of the 16,384 chunks are empty.
 
-The place table is the other surprise. All 274,171 names, with their hierarchy and their alternative spellings, are 2,000,931 bytes. **3.1% of the file.** The hierarchy itself is almost free because it is never stored as parent pointers: places are numbered so that all countries come first, then all regions grouped by country, then all cities grouped by region, and the file only records *how many children each parent has*. Parent lookup is a binary search over a prefix sum.
+The place table is the other surprise. All 274,171 names, with their hierarchy and their alternative spellings, are 2,000,931 bytes. **4.2% of the file.** The hierarchy itself is almost free because it is never stored as parent pointers: places are numbered so that all countries come first, then all regions grouped by country, then all cities grouped by region, and the file only records *how many children each parent has*. Parent lookup is a binary search over a prefix sum.
 
 Names are split into blocks of 128 and each block is deflated separately, so recovering one name means inflating about two kilobytes rather than two megabytes. I tested several block sizes on the worldwide file:
 
@@ -159,24 +174,24 @@ Names are split into blocks of 128 and each block is deflated separately, so rec
 
 128 is the sweet spot. Below that the per-block zlib framing and the longer length table start costing more than the finer granularity saves.
 
-## How is a lookup fast when the file is 61 MB?
+## How is a lookup fast when the file is 45 MB?
 
-It never reads 61 MB. A lookup reads the header and the directory once (about 23 KB), and after that it reads exactly one chunk, inflates it, and binary searches it. Most chunks are a few kilobytes; the very worst one in the world, a square covering Belgium and the French border, is 189 KB compressed and holds 270,514 records. Nothing else in the file is touched.
+It never reads 45 MB. A lookup reads the header and the directory once (about 23 KB), and after that it reads exactly one chunk, inflates it, and binary searches it. Most chunks are a few kilobytes; the very worst one in the world, a square covering Belgium and the French border, is 155 KB compressed and holds 270,514 records — the same count as before, since that chunk has almost no gaps for version 1 to pay for. Nothing else in the file is touched.
 
 From the benchmark suite, on the worldwide file:
 
 ```
-open                                      7.65 ms
-query, cold   Paris / Tokyo / Amsterdam   9.52 / 3.33 / 2.11 ms
-query, warm                               0.03 ms
-search "berlin" --sort, cold / warm       17.76 / 0.87 ms
-300 cold lookups, concurrent             92.23 ms
-memory after open                          101 MB RSS
+open                                     10.30 ms
+query, cold   Paris / Tokyo / Amsterdam  13.03 / 3.56 / 3.77 ms
+query, warm                               0.06 ms
+search "berlin" --sort, cold / warm      37.04 / 1.70 ms
+300 cold lookups, concurrent            192.08 ms
+memory after open                         100 MB RSS
 ```
 
-The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs 20 microseconds, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
+The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs well under a tenth of a millisecond, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
 
-The chunk decoder is also where the only non-portable trick in the whole project lives. Turning delta varints back into absolute codes is a tight integer loop over a few hundred thousand values, and it was the dominant cost. It now runs as a 1.6 KB WebAssembly SIMD module, inlined as base64 so it is still a dependency-free package, and it took the largest chunk from 12 ms to 6 ms. When WASM isn't available, on a page whose CSP lacks `'wasm-unsafe-eval'` for example, it falls back to the plain JavaScript version at about half the speed, and nothing else changes.
+The chunk decoder used to be the one place WebAssembly paid for itself: turning stored codes back into absolute ones was a tight loop over a few hundred thousand values, worth moving into a compiled SIMD module. Version 1 chunks have no codes to turn back into anything; deriving them is one running sum over the depths array, which is cheap enough in plain JavaScript that the WebAssembly version of the same idea was not worth keeping, as the earlier section covers. Version 0 files still decode through WebAssembly; the file this whole post is now measured against does not.
 
 ## How can search be fast when it matches anything?
 
@@ -191,7 +206,7 @@ Two details make it actually work:
 
 What about one- and two-character queries, which have no trigram at all and match nearly everything? We cannot index our way out of that, so the file just stores the answer: for every one- and two-character string that occurs anywhere in any name, the top five places in relevance order, precomputed. 25,497 keys, about 365 KiB, binary searched by key.
 
-The whole search index is 4.26 MB against a 61 MB main file. Measured end to end, opening both files fresh for every query:
+The whole search index is 4.26 MB against a 45 MB main file. Measured end to end, opening both files fresh for every query:
 
 | | 1 char | 2 chars | 3 chars | 5 chars | 8 chars |
 |---|---|---|---|---|---|
@@ -241,4 +256,4 @@ cgeodata lookup world.bin 52.37,4.9
 
 You need a `.bin` to point it at. `make netherlands` builds a small one in a few minutes; `make world` downloads the planet and takes rather longer, and wants a machine with some RAM. Both are in the [repository](https://github.com/ferrybig/loc-to-city).
 
-The whole thing is 234 commits over five weeks, from 2026-09-16 to 2026-10-21, and the sequence was: build four approaches on one country, measure them against each other, pick the winner, then delete the prototype and rewrite it properly. That middle step is the one I'd keep. I went in sure that exact polygon maths would be the thing to beat, and it lost on size and on speed and barely won on accuracy: the only queries it answered better were the few per cent that land within sight of a border, and paying for the polygons everywhere to fix those turned out to be the worse deal.
+The whole thing is 239 commits over five weeks, from 2026-09-16 to 2026-10-22, and the sequence was: build four approaches on one country, measure them against each other, pick the winner, then delete the prototype and rewrite it properly. That middle step is the one I'd keep. I went in sure that exact polygon maths would be the thing to beat, and it lost on size and on speed and barely won on accuracy: the only queries it answered better were the few per cent that land within sight of a border, and paying for the polygons everywhere to fix those turned out to be the worse deal.
