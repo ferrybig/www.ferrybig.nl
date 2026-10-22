@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" width="820" height="320" role="img" aria-label="A quadtree over one chunk. Cells well inside one city stay large, the cells a boundary runs through are split to the depth limit, and four children that all resolve to the same place collapse back into their parent. The 16 resulting leaf cells are stored as two parallel arrays: depths and palette indices. Their Morton codes are not stored at all, since each record starts exactly where the one before it ends.">
+	<title>From quadtree leaves to two arrays, in record order</title>
+	<style>
+		text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1a1d23; }
+		.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+		.ttl { font-size: 15px; font-weight: 700; }
+		.sub { font-size: 12px; font-weight: 600; fill: #5d6675; }
+		.note { font-size: 12px; fill: #5d6675; }
+		.step { font-size: 12.5px; }
+		.row { font-size: 12px; }
+		.code { font-size: 9px; fill: #5d6675; }
+		.bg { fill: #ffffff; }
+		.cellA { fill: #f7e4e1; stroke: #a8322b; stroke-width: 0.9; }
+		.cellB { fill: #f7eddc; stroke: #9a6410; stroke-width: 0.9; }
+		.real { fill: none; stroke: #1a1d23; stroke-width: 2.5; }
+		.byte { fill: #f4f5f7; stroke: #c3c9d2; stroke-width: 1; }
+		.hl { fill: #f7e4e1; stroke: #a8322b; stroke-width: 1; }
+		.sep { stroke: #c3c9d2; stroke-width: 1; }
+
+		@media (prefers-color-scheme: dark) {
+			text { fill: #e9ebee; }
+			.sub, .note, .code { fill: #9ba4b2; }
+			.bg { fill: #111111; }
+			.cellA { fill: #35211f; stroke: #e8776b; }
+			.cellB { fill: #2d2415; stroke: #e0a152; }
+			.real { stroke: #e9ebee; }
+			.byte { fill: #1c1f25; stroke: #434a56; }
+			.hl { fill: #35211f; stroke: #e8776b; }
+			.sep { stroke: #434a56; }
+		}
+	</style>
+
+	<rect class="bg" x="0" y="0" width="820" height="580"/>
+
+	<text class="ttl" x="0" y="14">How one chunk gets small</text>
+
+	<!-- ===================== left: the quadtree ===================== -->
+	<text class="sub" x="0" y="38">16 leaf cells, at three different sizes</text>
+
+	<!-- two depth-1 cells, west -->
+	<rect class="cellA" x="0" y="48"  width="128" height="128"/>
+	<rect class="cellA" x="0" y="176" width="128" height="128"/>
+	<text class="mono code" x="64" y="115" text-anchor="middle">32</text>
+	<text class="mono code" x="64" y="243" text-anchor="middle">0</text>
+
+	<!-- middle columns: merged depth-2 blocks where all four children agreed -->
+	<rect class="cellB" x="128" y="48"  width="64" height="64"/><text class="mono code" x="160" y="84"  text-anchor="middle">56</text>
+	<rect class="cellA" x="128" y="176" width="64" height="64"/><text class="mono code" x="160" y="212" text-anchor="middle">24</text>
+
+	<!-- middle columns: depth-3 cells the boundary actually separates -->
+	<rect class="cellA" x="128" y="112" width="32" height="32"/><text class="mono code" x="144" y="131" text-anchor="middle">50</text>
+	<rect class="cellB" x="160" y="112" width="32" height="32"/><text class="mono code" x="176" y="131" text-anchor="middle">51</text>
+	<rect class="cellA" x="128" y="144" width="32" height="32"/><text class="mono code" x="144" y="163" text-anchor="middle">48</text>
+	<rect class="cellB" x="160" y="144" width="32" height="32"/><text class="mono code" x="176" y="163" text-anchor="middle">49</text>
+	<rect class="cellA" x="128" y="240" width="32" height="32"/><text class="mono code" x="144" y="259" text-anchor="middle">18</text>
+	<rect class="cellB" x="160" y="240" width="32" height="32"/><text class="mono code" x="176" y="259" text-anchor="middle">19</text>
+	<rect class="cellA" x="128" y="272" width="32" height="32"/><text class="mono code" x="144" y="291" text-anchor="middle">16</text>
+	<rect class="cellB" x="160" y="272" width="32" height="32"/><text class="mono code" x="176" y="291" text-anchor="middle">17</text>
+
+	<!-- four depth-2 cells, east -->
+	<rect class="cellB" x="192" y="48"  width="64" height="64"/><text class="mono code" x="224" y="84"  text-anchor="middle">60</text>
+	<rect class="cellB" x="192" y="112" width="64" height="64"/><text class="mono code" x="224" y="148" text-anchor="middle">52</text>
+	<rect class="cellB" x="192" y="176" width="64" height="64"/><text class="mono code" x="224" y="212" text-anchor="middle">28</text>
+	<rect class="cellB" x="192" y="240" width="64" height="64"/><text class="mono code" x="224" y="276" text-anchor="middle">20</text>
+
+	<!-- the actual boundary that was fed in -->
+	<path class="real" d="M 128,48 L 147.2,137.6 L 185.6,195.2 L 166.4,304"/>
+
+	<rect class="cellA" x="0" y="322" width="11" height="11"/>
+	<text class="note" x="18" y="332">Amsterdam</text>
+	<rect class="cellB" x="104" y="322" width="11" height="11"/>
+	<text class="note" x="122" y="332">Diemen</text>
+	<path class="real" d="M 180,328 L 206,328"/>
+	<text class="note" x="212" y="332">the real boundary</text>
+
+	<!-- ===================== right: the rule ===================== -->
+	<text class="sub" x="300" y="38">The rule the compressor actually applies</text>
+
+	<text class="step" x="300" y="60">1. Drop every place whose polygon misses the cell,</text>
+	<text class="step" x="314" y="78">and every place that merely contains a more</text>
+	<text class="step" x="314" y="96">specific one still in the running.</text>
+	<text class="step" x="300" y="118">2. If <tspan font-style="italic">every</tspan> place still left covers the whole cell,</text>
+	<text class="step" x="314" y="136">emit one record and stop.</text>
+	<text class="step" x="300" y="158">3. Otherwise a boundary runs through this cell:</text>
+	<text class="step" x="314" y="176">split into four and start again.</text>
+	<text class="step" x="300" y="198">4. At the depth limit, sample the cell on a 5 × 5</text>
+	<text class="step" x="314" y="216">grid, and give it to whichever place wins most</text>
+	<text class="step" x="314" y="234">of the 25 points.</text>
+	<text class="step" x="300" y="256">5. On the way back up, four children that each</text>
+	<text class="step" x="314" y="274">came back as one record, at the child depth,</text>
+	<text class="step" x="314" y="292">for the same place, collapse into their parent.</text>
+</svg>

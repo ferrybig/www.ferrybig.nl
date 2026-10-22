@@ -29,7 +29,7 @@
 	<rect class="bg" x="0" y="0" width="820" height="508"/>
 
 	<text class="ttl" x="0" y="14">CGEODATA file layout</text>
-	<text class="meta" x="820" y="14" text-anchor="end">world-high-res.bin · 64,244,778 bytes · heights not to scale</text>
+	<text class="meta" x="820" y="14" text-anchor="end">world-high-res.bin · 47,620,804 bytes · heights not to scale</text>
 
 	<!-- ============ Header ============ -->
 	<line class="conn" x1="165" y1="94" x2="200" y2="94"/>
@@ -51,7 +51,7 @@
 	<rect class="box" x="0" y="154" width="165" height="50" rx="3"/>
 	<rect class="accentBar" x="0" y="154" width="4" height="50"/>
 	<text class="band" x="16" y="176">Directory</text>
-	<text class="size" x="16" y="192">23,194 bytes</text>
+	<text class="size" x="16" y="192">22,776 bytes</text>
 
 	<rect class="boxAlt" x="200" y="154" width="620" height="50" rx="3"/>
 	<text class="mono field" x="216" y="176">place_table_length</text><text class="field" x="372" y="176">where the chunks start</text>
@@ -63,7 +63,7 @@
 	<rect class="accentBar" x="0" y="210" width="4" height="82"/>
 	<text class="band" x="16" y="232">Place table</text>
 	<text class="size" x="16" y="248">2,000,931 bytes</text>
-	<text class="size" x="16" y="264">3.1% of the file</text>
+	<text class="size" x="16" y="264">4.2% of the file</text>
 	<text class="size" x="16" y="280">274,171 places</text>
 
 	<rect class="boxAlt" x="200" y="210" width="620" height="82" rx="3"/>
@@ -84,7 +84,7 @@
 	<rect class="box" x="0" y="412" width="165" height="36" rx="3"/>
 	<rect class="accentBar" x="0" y="412" width="4" height="36"/>
 	<text class="band" x="16" y="435">Chunk 16383</text>
-	<text class="size" x="0" y="466">62,220,461 bytes, 96.8% of the file</text>
+	<text class="size" x="0" y="466">45,596,905 bytes, 95.7% of the file</text>
 
 	<rect class="boxAlt" x="200" y="298" width="620" height="150" rx="3"/>
 	<text class="band" x="216" y="320">One chunk <tspan class="note">(repeated 16,384 times, 7,608 of them non-empty)</tspan></text>
@@ -92,9 +92,9 @@
 	<text class="mono field" x="216" y="350">palette_count</text><text class="field" x="372" y="350">how many distinct places this chunk mentions</text>
 	<text class="mono field" x="216" y="368">palette[P]</text><text class="field" x="372" y="368">their place ids, sorted, delta-coded varints</text>
 	<text class="mono field" x="216" y="386">record_count</text><text class="field" x="372" y="386">how many leaf cells this chunk stores</text>
-	<text class="mono field" x="216" y="404">codes[M]</text><text class="field" x="372" y="404">Morton codes, sorted, delta-coded varints</text>
-	<text class="mono field" x="216" y="422">depths[M]</text><text class="field" x="372" y="422">one byte per cell: how deep the quadtree went</text>
-	<text class="mono field" x="216" y="440">palette_indices[M]</text><text class="field" x="372" y="440">one small integer per cell, into <tspan class="mono">palette</tspan></text>
+	<text class="mono field" x="216" y="404">depths[M]</text><text class="field" x="372" y="404">one byte per cell: how deep the quadtree went</text>
+	<text class="mono field" x="216" y="422">palette_indices[M]</text><text class="field" x="372" y="422">one small integer per cell, into <tspan class="mono">palette</tspan></text>
+	<text class="note" x="216" y="440">a record's code is never stored: each one starts exactly where the last ended</text>
 
-	<text class="note" x="0" y="494">Three parallel arrays, not a list of records, which is most of why this compresses at all. Each chunk is its own zlib stream.</text>
+	<text class="note" x="0" y="494">Two parallel arrays, not a list of records, which is most of why this compresses at all. Each chunk is its own zlib stream.</text>
 </svg>
