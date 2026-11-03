@@ -14,6 +14,8 @@ thumbnail:
 I started [loc-to-city](https://github.com/ferrybig/loc-to-city) because my favorite photo manager kept telling me the wrong city. It has since turned into something I keep reaching for in other projects, so this post is about the tool and the file format it produces, not about the photo manager. The headline I still find hard to believe: every country, region and city boundary on Earth, at a resolution of roughly 300 by 150 metres, in a single 45 MB file that answers a lookup without ever reading more than a small slice of it.
 
 Every colleague I showed this to guessed the file would be ten to a hundred times bigger, so somewhere between 1 GB to around 10 GB. That is a fair guess for the obvious approaches: shipping the polygons themselves costs around 5.5 GB according to the filtered polygon list.
+
+> **Update 2026-11-03:** the numbers in this post are for version 1 of the file format. Version 2 stores the same data in 19.5 MiB, see [Beating zlib: the cities of the world in 19.5 megabytes](/tech/beating-zlib-on-geodata).
 ## What the tool actually is
 
 Five TypeScript packages.
@@ -26,7 +28,7 @@ Five TypeScript packages.
  
 The one that matters to users is **reader**, published as `@ferrybig/cgeodata-reader`, which has zero 3th party runtime dependencies (note that it uses either node [`zlib`](https://nodejs.org/api/zlib.html) or the browsers [`CompressionStream`](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream)).
 
-The format of the `.bin` file is documented at, [binary-format.md](https://github.com/ferrybig/loc-to-city/blob/master/reader/binary-format.md), I decided to work on the format first before making implementations. There has been 1 version bump in the binary format, when I realised I didn't need to include morton codes and a marker for "no result", I only needed to include one of the 2, I kept the no result marker. A second bump replaced zlib for the chunks with a compressor written for this data, which took the file from 45.4 MiB to 19.5 MiB.
+The format of the `.bin` file is documented at, [binary-format.md](https://github.com/ferrybig/loc-to-city/blob/master/reader/binary-format.md), I decided to work on the format first before making implementations. There has been 1 version bump in the binary format, when I realised I didn't need to include morton codes and a marker for "no result", I only needed to include one of the 2, I kept the no result marker. A second bump replaced zlib for the chunks with a compressor written for this data, which took the file from 45.4 MiB to 19.5 MiB, [described in its own post](/tech/beating-zlib-on-geodata).
 
 ## Why not just store one point per city?
 
@@ -122,118 +124,7 @@ I asked claude to make a version 1 chunks WebAssembly decoder version 0 already 
 
 ### Can we beat zlib with our own compression?
 
-After version 1, zlib was still doing the last step: every chunk was its depths and palette indices, one after the other, deflated as one block. zlib is a general purpose compressor. It has no idea that it is looking at a quadtree, or that two records next to each other on the map usually belong to the same city. So I asked Claude whether a compressor that *does* know could do better. My idea was roughly this:
-
-* Count how often each palette index is used, build a [Huffman tree](https://en.wikipedia.org/wiki/Huffman_coding) from that, and store the indices run-length encoded.
-* Go a bit further than run-length encoding and do what [QOI](https://en.wikipedia.org/wiki/QOI_(image_format)) does: emit a marker that says "take the last X you output".
-* Stop wasting a whole byte on every depth, when the deepest depth in the world file is 10.
-* I expected that working with bits instead of bytes would slow things down, but maybe we would win some speed back by not running zlib.
-
-The result is [CGEODATA version 2](https://github.com/ferrybig/loc-to-city/pull/9). The records are exactly the same records as in version 1, only stored differently:
-
-```
-               v1, zlib      v2, range coded
-records     110,148,645          110,148,645
-bytes        47,620,804           20,482,701   -57.0%
-chunk bytes  45,596,905           18,459,579   -59.5%
-per record    3.31 bits            1.34 bits
-```
-
-45.4 MiB down to 19.5 MiB. That 1.34 bits per record is for the depth *and* the palette index of a record together. It works in three steps.
-
-#### Step 1: Don't store depths, store the quadtree
-
-The depths array is a pre-order listing of a quadtree, and a quadtree can be written down with a single yes/no question per node: *does this cell split into four?* For the Amsterdam and Diemen example from earlier, walking the tree from the root:
-
-```
-root                         split   1
-  south-west                 leaf    0      record 0
-  south-east                 split   1
-    south-west               split   1      records 16, 17, 18, 19 (depth 3, the maximum, no question needed)
-    south-east               leaf    0      record 20
-    north-west               leaf    0      record 24
-    north-east               leaf    0      record 28
-  north-west                 leaf    0      record 32
-  north-east                 split   1
-    ...                      1 0 0 0        records 48 to 60
-```
-
-That is 13 bits for what used to be 16 bytes of depths. A cell at the maximum depth can not split, so it does not even get a question.
-
-Those 13 bits are still not stored as 13 bits. Each question is asked with some knowledge of what was already decoded: the depth of the node, and whether the records to the west and south of it are deeper than it. If your neighbours had to split to follow a border, there is a good chance you have to as well. If your neighbours are big cells, you are probably in the middle of a city and you are probably a big cell too.
-
-#### Step 2: Guess the palette index from the neighbours
-
-This is the part I did not see coming. In my head, "take the last X you output" meant the last few records. But in Morton order, the record decoded just before you is often not even touching you: the Z-curve jumps around. What *is* always decoded before you are the cells directly to your west and south, because they have a lower Morton code.
-
-![The example chunk, with every record marked by whether its west or south neighbour predicts its place](neighbours.svg "Guessing a record from what is already decoded")
-
-So every leaf asks, in order:
-
-1. Is it the same place as my west neighbour? In the world file, this is yes for 74% of the records.
-2. If not: is it the same place as my south neighbour? Yes for another 19%.
-3. If not: which one is it? This is coded as a position in a [move-to-front list](https://en.wikipedia.org/wiki/Move-to-front_transform) of palette indices, where the most recently used index is at the front. The west and south answers are skipped in that list, since we already know it is neither of them. The position is written in [Elias gamma](https://en.wikipedia.org/wiki/Elias_gamma_coding), so small numbers are short.
-
-The decoder finds the neighbours cheaply: for every row and every column of the chunk, it remembers the last record it decoded there. In Morton order, the last record in your row is the one directly to your west.
-
-#### Step 3: A range coder instead of zlib
-
-After steps 1 and 2, a chunk is nothing but a long list of yes/no decisions. Those are fed into a [range coder](https://en.wikipedia.org/wiki/Range_coding), the same kind as the one inside [LZMA](https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm) (and so in `xz` and 7-Zip). A range coder is a form of arithmetic coding: every decision comes with a probability, and a decision that was very likely costs very little, less than a bit:
-
-| Chance the guess is right | Cost when it is right |
-|---|---|
-| 50% | 1 bit |
-| 90% | 0.15 bits |
-| 99% | 0.015 bits |
-| 99.6% (the most the format allows) | 0.005 bits |
-
-The probabilities are not stored anywhere. Every one starts at 50% and moves a sixteenth of the way towards each answer it sees, in the encoder and the decoder alike, so they learn the chunk while it is being decoded. And there is not one probability per kind of question, but one per *situation* (the format calls these contexts): "same as west?" has a separate probability for every depth, combined with whether the west and south neighbours agree with each other, and whether the previous record agreed with either of them. Deep inside a city, where both neighbours and the previous record are all the same place, the "same as west?" probability for that situation is pushed to its limit, and a record costs about 0.005 bits. That is a run-length encoding without ever writing down a run length.
-
-Why not Huffman? A Huffman code spends at least one whole bit for every symbol it writes. Huffman coding the depths and the palette indices separately costs at least two bits per record, already more than the 1.34 bits version 2 spends on both. It would need run-lengths on top to get below one bit per symbol, and its tree stored in every chunk. zlib itself is also just LZ77 plus Huffman, so it already did most of what a hand-written Huffman stage would have done. The other agent measured where the gain actually came from:
-
-```
-v1 chunks, zlib                                 45.6 MB
-v1 chunks, Zopfli (a better deflate encoder)    37.4 MB
-split flags + neighbour guesses, zlib           30.2 MB
-split flags + neighbour guesses, range coded    18.5 MB
-```
-
-So knowing what to predict (steps 1 and 2) already gets more than half of the way, even with plain zlib, and coding those predictions in fractions of a bit (step 3) does the rest.
-
-#### The price: decode speed
-
-Here I was right in my prompt. Working with bits is slower than working with bytes, and a range coder is worse than that: every decision depends on the one before it, so there is nothing to vectorize, and it takes about 2.5 decisions per record. zlib's inflate on the other hand is native code that has been optimized for decades.
-
-```
-                                    v1          v2
-decode every chunk                  1.0-1.2 s   4.7-5.1 s (WebAssembly), 11-12 s (JavaScript)
-32 tile burst, initial view z10     195 ms      212 ms
-32 tile burst, europe z4            1004 ms     3308 ms
-cold query Paris / Tokyo            11.3 / 3.5  28.6 / 9.9 ms
-encode every chunk, one thread      100 s       11 s
-```
-
-The hope of winning speed back by dropping zlib only came true on the encoding side: the compressor is 9 times faster at writing chunks than zlib at its highest level.
-
-Remember the WebAssembly decoder I reverted for version 1, because it only saved 16 microseconds per chunk? For version 2 it did come back, because here it is 2.4 times as fast as the JavaScript decoder. It follows the same rules as the version 0 decoder: it can only accept or decline a chunk, never report an error, and the JavaScript decoder stays the reference. A test feeds both 8,000 corrupted streams and checks that WebAssembly never accepts one that JavaScript rejects.
-
-A 3.3 times slower europe burst is far outside the 15% slowdown I normally allow for a reader change. I took it anyway: a cold lookup still stays under the ~50 ms I consider fine for a query that is awaited, the tile burst at a normal zoom level barely changed, and the download is less than half the size. The reader still reads version 0 and 1 files, and the compressor can still write version 1, so anyone who prefers speed over size can transcode a file back. Going version 1 → 2 → 1 gives back the exact same bytes.
-
-### How close was Claude to my idea?
-
-| My idea | What version 2 does | |
-|---|---|---|
-| A Huffman tree built from how often each palette index is used | Adaptive arithmetic (range) coding, where probabilities are learned while decoding and nothing is stored | Same family, one step further: fractions of a bit, and no tree per chunk |
-| Run-length encoding | No runs at all, but "the previous record agreed" is part of the context, so a long run costs ~0.005 bits per record | Same effect, different mechanism |
-| QOI's "take the last X you output" | "Same as west", "same as south", and otherwise a position in a move-to-front list | The closest match. QOI keeps a table of recently seen pixels; the move-to-front list is recently used palette indices |
-| Store depths in fewer bits than a byte | Depths are not stored at all, only one yes/no split flag per node | Further than my idea |
-| Do it for both the depths and the palette indices | Both | Yes |
-| The palette itself (the list of place ids) | Unchanged, still delta-coded varints | Not touched |
-| Bits instead of bytes will be slower | About 4 times slower to decode | Correct |
-| Maybe faster because there is no zlib | Encoding 9 times faster, decoding slower | Half right |
-| Get `world.bin` below 45.5 MiB | 19.5 MiB | Yes |
-
-The one ingredient my prompt was missing is the second dimension. QOI is made for images stored line by line, where the previous pixel *is* the pixel to your left, so "same as last" works. In a Morton ordered quadtree, the previous record is often on the other side of the chunk, so Claude replaced "the last thing I output" with "the thing to my left" and "the thing below me", which is closer to what PNG's filters do than to QOI. Morton order is what made the codes free in version 1, and it is also what made the previous record a bad guess in version 2.
+After version 1, zlib was still doing the last step, and zlib has no idea that it is looking at a quadtree. That became CGEODATA version 2, where the chunks are written with a compressor that knows what a chunk is: **45.4 MiB down to 19.5 MiB**, at the cost of decoding that is about 4 times slower. It is a big enough story for its own post: [Beating zlib: the cities of the world in 19.5 megabytes](/tech/beating-zlib-on-geodata).
 
 ## How does 17 billion cells fit in 45 MB?
 
@@ -247,7 +138,7 @@ The worldwide file uses a 128 × 128 grid of chunks and a quadtree depth of 10, 
 
 Nobody would ship that. It is just the upper bound the grid starts from, before any of the structure below is applied. The actual file is 47,620,804 bytes, so **857 times smaller** than the dense grid, and 115 times smaller than the 5.5 GB of polygons it was built from.
 
-Where does it go? The quadtree collapses those 17.18 billion cells into **110,148,645 records on disk** — 106,377,942 real places plus 3,770,703 explicit gaps, now that a gap needs its own record rather than a skipped code — a factor of 156 on its own. Then those records are stored in 47.6 MB, which works out to **0.43 bytes per record**: a depth and a place reference, well under half a byte each. Version 2 stores the same records in 20.5 MB, 1.34 bits per record.
+Where does it go? The quadtree collapses those 17.18 billion cells into **110,148,645 records on disk** — 106,377,942 real places plus 3,770,703 explicit gaps, now that a gap needs its own record rather than a skipped code — a factor of 156 on its own. Then those records are stored in 47.6 MB, which works out to **0.43 bytes per record**: a depth and a place reference, well under half a byte each. [Version 2](/tech/beating-zlib-on-geodata) stores the same records in 20.5 MB, 1.34 bits per record.
 
 Three things get us there. The prototype measured the last two on a 954,497-record dataset, so I can put real numbers on them:
 
@@ -272,7 +163,7 @@ let me answer that with a table
 
 I used deflate anyway, because any compression with the delta-varint columnar layout had already captured most of the available gain, and because deflate is a compressor that is built into both Node.js (`zlib.inflateSync`) and every browser (`DecompressionStream('deflate')`). Paying a native addon or a WASM blob as a dependency, in exchange for 18%, in a library whose entire selling point is that it has no dependencies, was not a trade I wanted.
 
-In version 2, the chunks don't use deflate anymore, but a range coder that is part of the reader itself (see above), and that one beats every row of this table by a wide margin. The name blocks are still deflated.
+In version 2, the chunks don't use deflate anymore, but a range coder that is part of the reader itself ([see the follow-up post](/tech/beating-zlib-on-geodata)), and that one beats every row of this table by a wide margin. The name blocks are still deflated.
 
 ## What does the file look like?
 
@@ -310,7 +201,7 @@ search "berlin" --sort, cold / warm      37.04 / 1.70 ms
 memory after open                         100 MB RSS
 ```
 
-These are version 1 numbers; with version 2 a cold Paris query takes 28.6 ms and a cold Tokyo query 9.9 ms, since a range coded chunk is slower to decode. The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs well under a tenth of a millisecond, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
+These are version 1 numbers; with [version 2](/tech/beating-zlib-on-geodata) a cold Paris query takes 28.6 ms and a cold Tokyo query 9.9 ms, since a range coded chunk is slower to decode. The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs well under a tenth of a millisecond, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
 
 ## How can search be fast when it matches anything?
 
