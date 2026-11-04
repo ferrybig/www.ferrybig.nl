@@ -101,6 +101,36 @@ Why not Huffman? A Huffman code spends at least one whole bit for every symbol i
 
 So knowing what to predict (steps 1 and 2) already gets more than half of the way, even with plain zlib, and coding those predictions in fractions of a bit (step 3) does the rest.
 
+#### What is actually stored in a chunk
+
+A version 2 chunk holds three things: its palette (the place IDs it uses), a record count, and one range-coded stream. The depths are not stored at all. The stream encodes the quadtree itself.
+
+Decoding walks the tree from the root, in Morton order. Every node above the maximum depth first decodes one *split* decision: `1` gives four children (south-west, south-east, north-west, north-east), `0` makes the node a leaf. Each leaf is the next record, and its depth is the depth of the node it came from. Decoding stops after the record count is reached.
+
+Because Morton order visits the south-west and south-east quarters before the north ones, a node's west and south neighbours have always been decoded already. The decoder remembers the last record seen in each row and column of cells to find them. Those neighbours are what the palette index is predicted from:
+
+1. Is the index the same as the west neighbour's? One decision.
+2. If not, and the south neighbour has a different index, is it the same as the south neighbour's? One decision.
+3. Otherwise, code the index's rank in a move-to-front list of palette indices, skipping the two neighbours. The rank is written as an Elias gamma code, and each of its bits has its own probability.
+
+Move-to-front keeps recently used places near the front, so a chunk that uses a few common places codes most ranks in very few bits.
+
+Every decision looks up its probability in a *context*, a small table entry picked from the situation: the depth, what kind of neighbour is there (none, bigger, same size, or smaller), whether the west and south neighbours agree, and whether the previous record agreed with either. Each context starts at 50% and moves a sixteenth of the way towards each answer, as described above.
+
+#### The coder itself
+
+The probabilities are 12-bit integers, out of 4096. The decoder keeps two numbers: `range`, the width of the current interval, and `code`, where the encoded number sits inside that interval. To decode one decision with probability `p`:
+
+```text
+bound = (range >> 12) × p
+if code < bound:  bit = 0,  range = bound
+else:             bit = 1,  code = code − bound,  range = range − bound
+```
+
+The lower part of the interval has size `p / 4096` of the whole, and the decision picks which part to keep. This is the interval splitting from the diagram, written with integers. When `range` falls below 2²⁴, the decoder shifts in one more byte of the stream, so whole bytes are only read once their leading bits are settled. That is how a decision costing 0.005 bits can share a byte with its neighbours.
+
+The cost follows directly from the size of the part kept. At 99.6% (`p = 4081`), a decision that goes the likely way keeps 99.6% of the interval and costs about 0.005 bits. One that goes the unlikely way keeps 0.4% and costs about 8 bits. The probabilities learn the chunk as it is decoded, so the common case is cheap and the rare case pays for it.
+
 ## The price: decode speed
 
 Here I was right in my prompt. Working with bits is slower than working with bytes, and a range coder is worse than that: every decision depends on the one before it, so there is nothing to vectorize, and it takes about 2.5 decisions per record. zlib's inflate on the other hand is native code that has been optimized for decades.
