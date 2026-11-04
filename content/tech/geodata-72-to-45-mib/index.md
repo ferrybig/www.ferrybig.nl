@@ -1,5 +1,5 @@
 ---
-date: "2026-11-04"
+date: "2026-10-30"
 tags: ["tech", "geo", "compression", "binary-format", "typescript"]
 coAuthors:
     - name: Claude Opus 5
@@ -11,16 +11,15 @@ coAuthors:
 
 The worldwide [loc-to-city](https://github.com/ferrybig/loc-to-city) file went from 75,935,694 bytes (72.4 MiB) to 47,620,804 bytes (45.4 MiB), which is 37.3% smaller, with two changes to the file format. Measured on the real worldwide file:
 
-```
-                          records        bytes     MiB
-before                166,081,761   75,935,694    72.4
-children merged back  106,377,942   64,244,778    61.3   -15.4%
-codes derived         110,148,645   47,620,804    45.4   -25.9%
-```
+| Stage                 | Records     | Bytes                | MiB  |
+| --------------------- | ----------- | -------------------- | ---- |
+| before                | 166,081,761 | 75,935,694           | 72.4 |
+| children merged back  | 106,377,942 | 64,244,778 (-15.4%)  | 61.3 |
+| codes derived         | 110,148,645 | 47,620,804 (-25.9%)  | 45.4 |
 
 Both changes came out of going over the draft of the first post that Claude wrote, and checking its claims against the data instead of taking them at face value. The rest of this post is how I found each of them, the table above is the whole result.
 
-The first post, [Compressing the cities of the world into a mere 45 MiB](/tech/compressing-the-world-into-megabytes), explains what the tool does and what the file looks like. After these two changes the chunks were still compressed with zlib, replacing that is the subject of [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
+In the first post, [Compressing the cities of the world into a mere 45 MiB](/tech/compressing-the-world-into-megabytes), it explains what the tool does and what the file looks like. After these two changes the chunks were still compressed with zlib, replacing that is the subject of [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
 
 ## What a record is
 
@@ -34,12 +33,11 @@ I talked with Claude Opus about this, Opus didn't think it would be a significan
 
 After the merge cascades build finished, I realized where both I and claude where wrong, namely because a merged parent can itself become one of four mergeable siblings, so even though the numbers didn't look great initially, the real reduction is **36.0% of the records, 166,081,761 down to 106,377,942**. And the file:
 
-```
-                 before        after
-records     166,081,761  106,377,942   -36.0%
-bytes        75,935,694   64,244,778   -15.4%
-chunk bytes  73,911,162   62,220,461   -15.8%
-```
+| Metric      | Before      | After                |
+| ----------- | ----------- | -------------------- |
+| records     | 166,081,761 | 106,377,942 (-36.0%) |
+| bytes       | 75,935,694  | 64,244,778 (-15.4%)  |
+| chunk bytes | 73,911,162  | 62,220,461 (-15.8%)  |
 
 zlib's loss on the shortened runs is real but small next to the win from dropping a third of the varint deltas: 5,748 chunks got smaller, 15 got bigger. Lookups got faster too: a cold query in the densest chunk went from 17.9 ms to 9.5 ms, because there is a third less to decode.
 
@@ -58,12 +56,11 @@ As I was reviewing [the Claude drafted svg](https://github.com/ferrybig/www.ferr
 
 That became [CGEODATA version 1](https://github.com/ferrybig/loc-to-city/pull/7): the codes array is gone, and an empty stretch of cells is now an explicit "no place" record instead of a silent skip. Measured on the real rebuilt file, not a prototype:
 
-```
-             v0, codes stored   v1, codes derived
-records          106,377,942          110,148,645    +3.5%
-bytes             64,244,778           47,620,804   -25.9%
-chunk bytes       62,220,461           45,596,905   -26.7%
-```
+| Metric      | v0, codes stored | v1, codes derived   |
+| ----------- | ---------------- | ------------------- |
+| records     | 106,377,942      | 110,148,645 (+3.5%) |
+| bytes       | 64,244,778       | 47,620,804 (-25.9%) |
+| chunk bytes | 62,220,461       | 45,596,905 (-26.7%) |
 
 The extra 3,770,703 records are the gaps, which used to cost nothing and now cost one record each. They are cheap anyway: a long run of identical depths and index-0 palette indices is exactly what zlib likes. Losing the codes array outright pays for them several times over.
 

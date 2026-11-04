@@ -63,7 +63,9 @@
 	<rect class="cellB" x="192" y="48" width="64" height="64"/><text class="mono code" x="224" y="76" text-anchor="middle">60</text><text class="kind" x="224" y="92" text-anchor="middle">W</text>
 
 	<!-- the order the records are stored in -->
-	<polyline class="order" points="64,240 144,288 176,288 144,256 176,256 224,272 160,208 224,208 64,112 144,160 176,160 144,128 176,128 224,144 160,80 224,80"/>
+	<polyline class="order" points="64,240 144,288 176,288 144,256 176,256 224,272 160,208 224,208"/>
+	<path class="order" d="M 224,208 C 300,180 280,40 150,44 C 110,46 80,80 64,112"/>
+	<polyline class="order" points="64,112 144,160 176,160 144,128 176,128 224,144 160,80 224,80"/>
 
 	<!-- record 24 and what is known when it is decoded -->
 	<rect class="nb" x="96" y="208" width="32" height="32"/>
