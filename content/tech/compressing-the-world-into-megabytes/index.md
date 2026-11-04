@@ -17,7 +17,7 @@ I started [loc-to-city](https://github.com/ferrybig/loc-to-city) because my favo
 
 Every colleague I showed this to guessed the file would be ten to a hundred times bigger, so somewhere between 1 GiB to around 10 GiB. That is a fair guess for the obvious approaches: shipping the polygons themselves costs around 5.1 GiB according to the filtered polygon list.
 
-> **Update 2026-11-04:** the numbers in this post are for version 1 of the file format, and how it got from 72 MiB to 45 MiB is told in [Two fixes that took the geodata file from 72 MiB to 45 MiB](/tech/geodata-72-to-45-mib). Version 2 stores the same data in 19.5 MiB, see [Beating zlib: the cities of the world in 19.5 megabytes](/tech/beating-zlib-on-geodata).
+> **Update 2026-11-04:** the numbers in this post are for version 1 of the file format, and how it got from 72 MiB to 45 MiB is told in [Two fixes that took the geodata file from 72 MiB to 45 MiB](/tech/geodata-72-to-45-mib). Version 2 stores the same data in 19.5 MiB, see [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
 
 ## What the tool actually is
 
@@ -95,7 +95,7 @@ The first row of that table, the Morton codes, is not in the file. The depths al
 
 ### Can we beat zlib with our own compression?
 
-After version 1, zlib was still doing the last step, and zlib has no idea that it is looking at a quadtree. That became CGEODATA version 2, where the chunks are written with a compressor that knows what a chunk is: **45.4 MiB down to 19.5 MiB**, at the cost of decoding that is about 4 times slower. It is a big enough story for its own post: [Beating zlib: the cities of the world in 19.5 megabytes](/tech/beating-zlib-on-geodata).
+After version 1, zlib was still doing the last step, and zlib has no idea that it is looking at a quadtree. That became CGEODATA version 2, where the chunks are written with a compressor that knows what a chunk is: **45.4 MiB down to 19.5 MiB**, at the cost of decoding that is about 4 times slower. It is a big enough story for its own post: [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
 
 ## How does 17 billion cells fit in 45 MiB?
 

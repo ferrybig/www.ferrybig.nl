@@ -20,7 +20,7 @@ codes derived         110,148,645   47,620,804    45.4   -25.9%
 
 Both changes came out of going over the draft of the first post that Claude wrote, and checking its claims against the data instead of taking them at face value. The rest of this post is how I found each of them, the table above is the whole result.
 
-The first post, [Compressing the cities of the world into a mere 45 MiB](/tech/compressing-the-world-into-megabytes), explains what the tool does and what the file looks like. After these two changes the chunks were still compressed with zlib, replacing that is the subject of [Beating zlib: the cities of the world in 19.5 megabytes](/tech/beating-zlib-on-geodata).
+The first post, [Compressing the cities of the world into a mere 45 MiB](/tech/compressing-the-world-into-megabytes), explains what the tool does and what the file looks like. After these two changes the chunks were still compressed with zlib, replacing that is the subject of [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
 
 ## What a record is
 

@@ -5,9 +5,9 @@ coAuthors:
     - name: Claude Opus 5
       url: https://claude.com/claude-code
 ---
-# Beating zlib: the cities of the world in 19.5 megabytes
+# Beating zlib: the cities of the world in 19.5 MiB
 
-In [the previous post](/tech/compressing-the-world-into-megabytes) I squeezed every country, region and city boundary on Earth into a 45 MB file, and I ended up there with zlib doing the last step. It kept bothering me that zlib has no idea what it is compressing, so I asked Claude to write a compressor that does. The same file is now 19.5 MB, and this post is about how that works and what it costs.
+In [the previous post](/tech/compressing-the-world-into-megabytes) I squeezed every country, region and city boundary on Earth into a 45 MiB file, and I ended up there with zlib doing the last step. It kept bothering me that zlib has no idea what it is compressing, so I asked Claude to write a compressor that does. The same file is now 19.5 MiB, and this post is about how that works and what it costs.
 
 ## Where version 1 left off
 
@@ -92,10 +92,10 @@ The probabilities are not stored anywhere. Every one starts at 50% and moves a s
 Why not Huffman? A Huffman code spends at least one whole bit for every symbol it writes. Huffman coding the depths and the palette indices separately costs at least two bits per record, already more than the 1.34 bits version 2 spends on both. It would need run-lengths on top to get below one bit per symbol, and its tree stored in every chunk. zlib itself is also just LZ77 plus Huffman, so it already did most of what a hand-written Huffman stage would have done. The other agent measured where the gain actually came from:
 
 ```
-v1 chunks, zlib                                 45.6 MB
-v1 chunks, Zopfli (a better deflate encoder)    37.4 MB
-split flags + neighbour guesses, zlib           30.2 MB
-split flags + neighbour guesses, range coded    18.5 MB
+v1 chunks, zlib                                 43.5 MiB
+v1 chunks, Zopfli (a better deflate encoder)    35.7 MiB
+split flags + neighbour guesses, zlib           28.8 MiB
+split flags + neighbour guesses, range coded    17.6 MiB
 ```
 
 So knowing what to predict (steps 1 and 2) already gets more than half of the way, even with plain zlib, and coding those predictions in fractions of a bit (step 3) does the rest.
