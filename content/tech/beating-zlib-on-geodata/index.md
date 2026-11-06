@@ -115,6 +115,28 @@ The lower part of the interval is the `0` and has size `p / 4096` of the whole, 
 
 The cost follows directly from the size of the part kept. At 99.6% (`p = 4081`), a decision that goes the likely way keeps 99.6% of the interval and costs about 0.005 bits. One that goes the unlikely way keeps 0.4% and costs about 8 bits. The probabilities learn the chunk as it is decoded, so the common case is cheap and the rare case pays for it.
 
+#### Watch it work
+
+Reading about it only goes so far, so here is the 16 record example from step 1 going through the coder, one decision at a time. The first view is the grid of records, the second is the array of split flags with the guesses, and the third is the range coder cutting its interval and writing bytes. Press play, or step through it with the arrow keys.
+
+<geodata-range-coder mode="encode" example="blog">
+
+![The range coding diagram, which is shown instead of the simulation when JavaScript is disabled](range-coding.svg)
+
+</geodata-range-coder>
+
+The decoder goes the other way: it starts with nothing but the bytes, the number of records and the size of the palette, and rebuilds the records from them. It runs the same code as the encoder, so at the last step it shows the same records as the encoder does.
+
+<geodata-range-coder mode="decode" example="blog">
+
+The decoding simulation needs JavaScript.
+
+</geodata-range-coder>
+
+<script async type="module" src="../../../simulations/geodata-range-coder/dist/geodata-range-coder.js"></script>
+
+The example is tiny, so it costs 4.5 bits per record instead of the 1.34 of the real file, and 5 of its 9 bytes are only there because the encoder has to flush its registers. The probabilities don't have enough records to learn from.
+
 ## The price: decode speed
 
 Here I was right in my prompt. Working with bits is slower than working with bytes, and a range coder is worse than that: every decision depends on the one before it, so there is nothing to vectorize, and it takes about 2.5 decisions per record. zlib's inflate on the other hand is native code that has been optimized for decades.
