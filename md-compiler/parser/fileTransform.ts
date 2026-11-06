@@ -4,6 +4,7 @@ import { unified } from 'unified';
 import { toString as nodeToText } from 'mdast-util-to-string';
 import matter from 'gray-matter';
 import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
 import type { Root } from 'mdast';
 import type { CompileResults, CompileResultsArticle, CompileResultsSubTasks, RunningConfig } from '../types.js';
 import z from 'zod';
@@ -99,6 +100,7 @@ async function processFile(paths: string[], config: RunningConfig): Promise<Comp
 
 			const tree = unified()
 				.use(remarkParse as any) // todo fix this
+				.use(remarkGfm as any)
 				.parse(content) as Root;
 			const tableOfContent = tableOfContents(tree, Infinity);
 			// Note, the following is buggy as it does not account for the fact that some HTML elements add newlines between them.
