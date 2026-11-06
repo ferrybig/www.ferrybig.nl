@@ -45,6 +45,20 @@ everything at once. Playing fast shortens the animations to fit. The flush at th
 encode only writes bytes, so the records and the arrays stay on the last decision, and an encode
 and a decode of the same chunk end on the same records overview.
 
+## A real chunk
+
+`<geodata-real-chunk>` decodes chunk 207623 of `cfbea5e_world_super_res.bin` (35,422 records, 73,480
+decisions, a 5,963 byte stream) from its own bytes. It is the same walk and the same decoder, but a
+chunk that size cannot keep a step object per decision, so `codec/lite.ts` runs the walk with a sink
+that stores a few numbers per decision in typed arrays, and rebuilds the probabilities at any step
+from checkpoints. The view keeps only the controls, the records (a canvas, painted record by record),
+the stream (a tape that slides past a read head, drawing only the bytes near it) and the busiest
+probabilities. It does not decode until it is close to the screen, and the box reserves the height
+of the finished view.
+
+`src/real/` holds the chunk: `scripts/extract-chunk.mts <world.bin> <index>` writes it, and
+`test/lite.test.ts` checks a decode against the reader's records by checksum, without the 76 MB file.
+
 ## Is it faithful?
 
 The codec in `src/codec/` is not a drawing of the algorithm, it is the algorithm. `walk.ts`

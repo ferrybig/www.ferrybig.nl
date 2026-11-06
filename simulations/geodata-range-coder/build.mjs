@@ -18,8 +18,8 @@ const options = {
 	outdir: dev ? "dist-dev" : "dist",
 	jsx: "automatic",
 	jsxImportSource: "preact",
-	// The stylesheet goes into the element's shadow root as text.
-	loader: { ".css": "text" },
+	// The stylesheet goes into the element's shadow root as text, and the real chunk's stream as bytes.
+	loader: { ".css": "text", ".bin": "binary" },
 	minify: !dev,
 	sourcemap: dev,
 	legalComments: "none",

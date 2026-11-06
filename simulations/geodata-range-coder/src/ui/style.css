@@ -235,6 +235,38 @@ table.records tr:first-child td { color: var(--muted); font-size: 0.74rem; }
 .probs meter { width: 100%; height: 8px; }
 .probs small { color: var(--muted); }
 
+/* ---------- the real chunk ---------- */
+/* The number of columns depends on the width only, so the status never changes height. */
+.real .status { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 2px 18px; margin: 8px 0 12px; color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.real .status span { white-space: nowrap; }
+.real .tally { margin: -2px 0 6px; white-space: nowrap; }
+/* The size of the finished view at the widths where its layout changes, found by measuring. */
+.real.placeholder { display: grid; place-items: center; min-height: 1180px; color: var(--muted); }
+@container (min-width: 480px) {
+	.real.placeholder { min-height: 1320px; }
+}
+@container (min-width: 780px) {
+	.real-panels { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+	.real.placeholder { min-height: 660px; }
+}
+.real-map { position: relative; width: 100%; max-width: 520px; margin: 0 auto; aspect-ratio: 1; background: var(--panel-2); border: 1px solid var(--line); }
+.real-map canvas { display: block; width: 100%; height: 100%; }
+.real-cell {
+	position: absolute; transform: translate(-50%, -50%); min-width: 10px; min-height: 10px;
+	border: 2px solid var(--focus); box-shadow: 0 0 0 1px light-dark(#ffffff, #000000); pointer-events: none;
+}
+.tape { position: relative; height: 44px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); --head: 30%; }
+.tape-track { position: absolute; left: var(--head); top: 0; height: 100%; }
+.tape-track.smooth { transition: transform 0.12s linear; }
+.tape .byte { position: absolute; top: 7px; width: 26px; padding: 2px 0; text-align: center; font-size: 0.8rem; }
+.tape-head { position: absolute; left: var(--head); top: 0; bottom: 0; border-left: 2px solid var(--accent); z-index: 2; }
+.tape::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, var(--panel), transparent 12%, transparent 88%, var(--panel)); }
+.tape-progress { height: 6px; margin-top: 8px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
+.tape-progress > span { display: block; height: 100%; background: var(--accent); }
+.real .probs { grid-template-columns: minmax(0, 1fr); }
+.real .probs li { grid-template-columns: minmax(120px, 1fr) 60px 40px 58px; }
+.real .probs small { text-align: right; }
+
 @keyframes pop {
 	from { transform: scale(0.82); opacity: 0.2; }
 	to { transform: scale(1); opacity: 1; }

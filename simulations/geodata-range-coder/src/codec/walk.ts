@@ -30,7 +30,22 @@ export interface WalkOptions {
 	coder: BitCoder<CoderStep>;
 	/** The records to write. Absent when decoding. */
 	truth?: Chunk;
+	/**
+	 * Hands every decision and record to the caller as they happen, and keeps
+	 * none of them, so that a chunk of tens of thousands of records does not
+	 * leave a step object behind for each decision. The step's `mtf` and the
+	 * record's `mtfBefore` and `mtfAfter` are empty then.
+	 */
+	sink?: WalkSink;
 }
+
+export interface WalkSink {
+	decision(step: DecisionStep): void;
+	record(record: LeafResult): void;
+}
+
+/** What a sink never looks at, and a walk with one does not copy. */
+const NO_MTF: number[] = [];
 
 export interface WalkResult {
 	steps: DecisionStep[];
@@ -43,7 +58,7 @@ function category(n: Neighbour | null, d: number): Category {
 }
 
 export function walk(options: WalkOptions): WalkResult {
-	const { maxDepth: D, paletteCount, recordCount, coder, truth } = options;
+	const { maxDepth: D, paletteCount, recordCount, coder, truth, sink } = options;
 	const N = 2 ** D;
 
 	const probs = {} as Record<Table, Uint16Array>;
@@ -60,6 +75,7 @@ export function walk(options: WalkOptions): WalkResult {
 
 	const steps: DecisionStep[] = [];
 	const records: LeafResult[] = [];
+	let decisions = 0;
 
 	const stack: NodeRef[] = [{ d: 0, x: 0, y: 0 }];
 	let j = 0;
@@ -86,7 +102,7 @@ export function walk(options: WalkOptions): WalkResult {
 		seen[table][ctx] = timesSeen + 1;
 		const result: DecisionStep = {
 			kind: "decision",
-			n: steps.length,
+			n: decisions++,
 			table,
 			ctx,
 			bit,
@@ -97,10 +113,11 @@ export function walk(options: WalkOptions): WalkResult {
 			...at,
 			record: j,
 			code,
-			mtf: mtf.slice(),
+			mtf: sink ? NO_MTF : mtf.slice(),
 			coder: step,
 		};
-		steps.push(result);
+		if (sink) sink.decision(result);
+		else steps.push(result);
 		return result;
 	}
 
@@ -160,7 +177,7 @@ export function walk(options: WalkOptions): WalkResult {
 				(leafContext.prevEqualsSouth ? 1 : 0)) *
 				4 +
 			westCategory;
-		const mtfBefore = mtf.slice();
+		const mtfBefore = sink ? NO_MTF : mtf.slice();
 		const trueIndex = () => truth!.indices[j]!;
 		const truthBit =
 			(is: number) =>
@@ -252,10 +269,11 @@ export function walk(options: WalkOptions): WalkResult {
 			how,
 			...(rank === undefined ? {} : { rank }),
 			mtfBefore,
-			mtfAfter: mtf.slice(),
+			mtfAfter: sink ? NO_MTF : mtf.slice(),
 		};
 		last!.result = result;
-		records.push(result);
+		if (sink) sink.record(result);
+		else records.push(result);
 
 		const neighbour: Neighbour = { record: j, index: v, depth: d };
 		row.fill(neighbour, y, y + size);
