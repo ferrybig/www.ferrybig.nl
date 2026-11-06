@@ -56,6 +56,12 @@ the stream (a tape that slides past a read head, drawing only the bytes near it)
 probabilities. It does not decode until it is close to the screen, and the box reserves the height
 of the finished view.
 
+The map: OpenStreetMap tiles (zoom 10, six of them for this chunk) are drawn behind the records,
+which are then see-through. A checkbox turns it off, and the tiles are only fetched while it is on.
+`ui/streetMap.ts` cuts every row of the chunk's grid from the tile row at that latitude, because the
+grid is linear in latitude and the tiles are Web Mercator. The credit is shown with the map. The
+site's Content-Security-Policy has to allow `https://tile.openstreetmap.org` in `img-src`.
+
 `src/real/` holds the chunk: `scripts/extract-chunk.mts <world.bin> <index>` writes it, and
 `test/lite.test.ts` checks a decode against the reader's records by checksum, without the 76 MB file.
 

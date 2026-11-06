@@ -3,7 +3,7 @@ default-src 'self';
 connect-src 'self' analytics.ferrybig.nl;
 script-src 'self' 'unsafe-eval' 'unsafe-inline';
 style-src 'self' 'unsafe-inline';
-img-src 'self' blob: data:;
+img-src 'self' blob: data: https://tile.openstreetmap.org;
 font-src 'self';
 object-src 'none';
 base-uri 'self';

@@ -241,16 +241,29 @@ table.records tr:first-child td { color: var(--muted); font-size: 0.74rem; }
 .real .status span { white-space: nowrap; }
 .real .tally { margin: -2px 0 6px; white-space: nowrap; }
 /* The size of the finished view at the widths where its layout changes, found by measuring. */
-.real.placeholder { display: grid; place-items: center; min-height: 1180px; color: var(--muted); }
-@container (min-width: 480px) {
-	.real.placeholder { min-height: 1320px; }
+.real.placeholder { display: grid; place-items: center; min-height: 1230px; color: var(--muted); }
+@container (min-width: 400px) {
+	.real.placeholder { min-height: 1310px; }
+}
+@container (min-width: 520px) {
+	.real.placeholder { min-height: 1350px; }
 }
 @container (min-width: 780px) {
 	.real-panels { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 	.real.placeholder { min-height: 660px; }
 }
+@container (min-width: 900px) {
+	.real.placeholder { min-height: 710px; }
+}
 .real-map { position: relative; width: 100%; max-width: 520px; margin: 0 auto; aspect-ratio: 1; background: var(--panel-2); border: 1px solid var(--line); }
-.real-map canvas { display: block; width: 100%; height: 100%; }
+.real-map canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+/* With the street map behind them, the records are see-through. */
+.real-map.with-map canvas:not(.real-street-map) { opacity: 0.62; }
+.real-street-map { visibility: hidden; }
+.with-map .real-street-map { visibility: visible; }
+.map-toggle { display: block; margin-top: 8px; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+.attribution { margin-top: 4px; }
+.attribution a { color: inherit; }
 .real-cell {
 	position: absolute; transform: translate(-50%, -50%); min-width: 10px; min-height: 10px;
 	border: 2px solid var(--focus); box-shadow: 0 0 0 1px light-dark(#ffffff, #000000); pointer-events: none;

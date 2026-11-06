@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
 import type { LiteTrace } from "../codec/lite.ts";
+import { paintStreetMap, type BoundingBox } from "./streetMap.ts";
 
 /**
  * The colour of a palette index. Place 0 is "no place", the others are spread
@@ -14,6 +15,9 @@ interface Props {
 	done: number;
 	/** Decisions taken so far. */
 	k: number;
+	/** Where the chunk is, and whether to draw OpenStreetMap behind the records. */
+	boundingBox: BoundingBox;
+	streetMap: boolean;
 }
 
 /**
@@ -21,8 +25,9 @@ interface Props {
  * record. Going forward paints only the new records, so playing fast stays
  * cheap, and going back starts the picture again.
  */
-export function RealMap({ trace, done, k }: Props) {
+export function RealMap({ trace, done, k, boundingBox, streetMap }: Props) {
 	const canvas = useRef<HTMLCanvasElement>(null);
+	const background = useRef<HTMLCanvasElement>(null);
 	const painted = useRef(0);
 	const D = trace.header.maxDepth;
 	const N = 2 ** D;
@@ -43,6 +48,13 @@ export function RealMap({ trace, done, k }: Props) {
 		painted.current = done;
 	}, [trace, done, N, D]);
 
+	// The map is only fetched once someone wants it.
+	useEffect(() => {
+		const el = background.current;
+		if (!streetMap || !el) return;
+		return paintStreetMap(el, boundingBox);
+	}, [streetMap, boundingBox]);
+
 	// The cell the last decision was about, centred and never smaller than a dot.
 	const at = k > 0 ? k - 1 : -1;
 	let box: { left: string; top: string; size: string } | null = null;
@@ -56,7 +68,8 @@ export function RealMap({ trace, done, k }: Props) {
 	}
 
 	return (
-		<div class="real-map">
+		<div class={`real-map ${streetMap ? "with-map" : ""}`}>
+			<canvas ref={background} class="real-street-map" width={N} height={N} aria-hidden="true" />
 			<canvas
 				ref={canvas}
 				width={N}

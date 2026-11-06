@@ -57,6 +57,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 	const [k, setK] = useState(0);
 	const [playing, setPlaying] = useState(false);
 	const [speed, setSpeed] = useState(1);
+	const [streetMap, setStreetMap] = useState(true);
 	const kRef = useRef(0);
 
 	const go = (n: number) => {
@@ -193,7 +194,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					<h3>
 						<span class="num">1</span> The records
 					</h3>
-					<RealMap trace={trace} done={done} k={k} />
+					<RealMap trace={trace} done={done} k={k} boundingBox={REAL_CHUNK.boundingBox} streetMap={streetMap} />
 					<ul class="legend">
 						{legend.top.map((index) => (
 							<li key={index}>
@@ -206,6 +207,16 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 							<span class="swatch active-swatch" /> the cell being decided
 						</li>
 					</ul>
+					<label class="map-toggle">
+						<input type="checkbox" checked={streetMap} onChange={(e) => setStreetMap((e.target as HTMLInputElement).checked)} /> show the map
+						behind it
+					</label>
+					<p class="hint attribution" style={{ visibility: streetMap ? "visible" : "hidden" }}>
+						Map: ©{" "}
+						<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer noopener">
+							OpenStreetMap contributors
+						</a>
+					</p>
 				</section>
 
 				<section class="panel">
