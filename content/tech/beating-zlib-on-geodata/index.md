@@ -170,3 +170,22 @@ A 3.3 times slower europe burst is far outside the 15% slowdown I normally allow
 | Get `world.bin` below 45.5 MiB | 19.5 MiB | Yes |
 
 The one ingredient my prompt was missing is the second dimension. QOI is made for images stored line by line, where the previous pixel is the pixel to your left, so "same as last" works. In a Morton ordered quadtree, the previous record is often on the other side of the chunk, so Claude corrected my idea of "the last thing I output" with "the thing to my left" and "the thing below me", which is closer to what PNG's filters do than to QOI. Morton order is what made the codes free in version 1, and it is also what made the previous record a bad guess in version 2.
+
+
+## Watch it decoding a real chunk
+
+The examples above have 16 records. A real chunk has thousands. This is chunk 207623 of the world file, the tile that runs from the eastern edge of Amsterdam, over the Markermeer, to Lelystad and Hoorn. It is 6,052 bytes in the file: 89 bytes of palette and record count, and a range coded stream of 5,963 bytes for 35,422 records. That is 1.35 bits per record, right at the average of the whole file.
+
+It is the same engine as the simulations above, but there are 73,480 decisions in this chunk, about two for every record, so it can't show the arithmetic of every one. What is left is the part you can still follow at this speed, and the controls are the same. The fast speed decodes the whole chunk in about seven seconds.
+
+<geodata-real-chunk>
+
+The simulation of this chunk needs JavaScript.
+
+</geodata-real-chunk>
+
+* **The records** fill in from the south-west corner in Morton order, and the black square is the cell the decoder is asking about. Big areas of one place take a few records, and the borders between places take thousands of tiny ones.
+* **The stream** is a tape that slides past the read head. The bytes on the left have been read, and the four that are outlined are the ones the decoder holds in `code` right now. The tape moves about one byte for every six records.
+* **The probabilities** are the ones from step 3, with the context in brackets: `split` is "does this cell split?", `sameWest` and `sameSouth` are the neighbour guesses, and `rankLength` is the start of the move-to-front rank. The bar is the chance of a `0`. This chunk only ever uses 276 of the 2,496 probabilities the format has, and the list shows the 12 that decide the most.
+
+Watch the `sameWest` rows while it decodes a big area: they sink towards 0.4%, the lowest a probability can go, because the answer there is "yes, same as west" almost every time. Every one of those decisions costs about 0.005 bits, and that is how 35,422 records fit in less than six kilobytes.
