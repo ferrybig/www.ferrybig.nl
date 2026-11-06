@@ -1,8 +1,8 @@
 // Bundles src/element.ts into dist/geodata-range-coder.js, a single ES module
 // that registers the <geodata-range-coder> element and carries its own CSS.
 //
-//   node build.mjs dev     serve index.html with live reload on :5173
-//   node build.mjs build   minified bundle for embedding
+//   node build.mjs dev     serve index.html with live reload on :5173 (writes dist-dev/)
+//   node build.mjs build   minified bundle for embedding (writes dist/, which the site imports)
 import * as esbuild from "esbuild";
 
 const mode = process.argv[2] ?? "build";
@@ -14,7 +14,8 @@ const options = {
 	bundle: true,
 	format: "esm",
 	target: "es2022",
-	outdir: "dist",
+	// The dev build has a source map and is not minified, so it stays out of dist/.
+	outdir: dev ? "dist-dev" : "dist",
 	jsx: "automatic",
 	jsxImportSource: "preact",
 	// The stylesheet goes into the element's shadow root as text.

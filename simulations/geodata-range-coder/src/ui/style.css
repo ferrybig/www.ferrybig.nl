@@ -2,6 +2,7 @@
    way the site's own CSS does, so the site's dark mode switch reaches in. */
 :host {
 	display: block;
+	margin-block: 1.5rem;
 	container-type: inline-size;
 	--stage: 0.3s;
 	--ink: light-dark(#1a1d23, #e9ebee);

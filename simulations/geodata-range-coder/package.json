@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node build.mjs dev",
     "build": "node build.mjs build",
-    "test": "node --test test/",
+    "test": "node --test \"test/**/*.test.ts\"",
     "tsc": "tsc --noEmit"
   },
   "dependencies": {

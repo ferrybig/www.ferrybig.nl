@@ -12,10 +12,10 @@ one ES module that registers a `<geodata-range-coder>` element.
 
 ```sh
 npm install        # see the note on esbuild below
-npm run dev        # http://127.0.0.1:5173/, rebuilds on every save
+npm run dev        # http://127.0.0.1:5173/, rebuilds on every save (into dist-dev/)
 npm test           # the codec against the spec and against loc-to-city
 npm run tsc
-npm run build      # dist/geodata-range-coder.js, minified
+npm run build      # dist/geodata-range-coder.js, minified: the file the site imports
 ```
 
 `package.json` has `allowScripts` for esbuild's postinstall, because this machine's npm runs
@@ -73,21 +73,36 @@ every possible content invisibly in the same grid cell as the visible one, so th
 as tall as the longest at the current width. It is used for the caption, the arithmetic table, the
 decision header, the flag row and the byte strip. The price is some empty space under a short caption.
 
-## Putting it in a post
+## In the post
 
-Not done yet. The `html eval` blocks set `innerHTML` in a shadow root, and scripts set that
-way do not run, so the element needs a different way in:
+The post writes the element and a script tag, with the diagram as the content for readers
+without JavaScript (the element draws in a shadow root and has no `<slot>`, so that content is
+hidden once the element is defined):
 
-- **iframe**: copy `dist/geodata-range-coder.js` plus a small HTML page to `public/`, and put an
-  `<iframe>` in an `html eval` block. It works today, but the iframe does not see the site's
-  dark mode toggle, and needs a fixed height.
-- **A client component** that loads the bundle and renders the element, used from the post.
-  The element reads the page's `color-scheme`, so the site's toggle reaches it. This needs
-  checking against what `md-compiler` lets a post import.
+```mdx
+<geodata-range-coder mode="encode" example="blog">
 
-The element takes optional `mode="encode|decode"` and `example="blog|spec"` attributes, which
-fix the direction or chunk and hide the matching control, so a post can show an encoder and
-a decoder side by side.
+![Fallback for readers without JavaScript](range-coding.svg)
+
+</geodata-range-coder>
+
+<script async type="module" src="../../../simulations/geodata-range-coder/dist/geodata-range-coder.js"></script>
+```
+
+- The `src` is relative to the post, like an image. `md-compiler/rehype/rehypeMdxAssets.ts`
+  imports it as an asset, so it is emitted as
+  `/_next/static/simulations/geodata-range-coder/dist/geodata-range-coder.<hash>.js`: the hash
+  is in the name, so old and new deploys never fight over one URL, and it gets the long cache of
+  `/_next/static/*`.
+- `next.config.mjs` makes sure that file is copied byte for byte: Next's script loaders and its
+  minifier skip anything imported with `?rehype-asset`.
+- `async` is required while the site runs on Next: a plain `<script>` React creates after a
+  client-side navigation never runs, an `async` one is moved to `<head>`, loaded once for both
+  elements and run.
+- The `Dockerfile` builds the bundle in its own stage (tsc, tests, `npm run build`) and copies it
+  into the build. Locally, `npm run build-simulations` in the site's root does the same, and
+  must have been run before `npm run dev` or `npm run build`. `npm run dev` here writes to
+  `dist-dev/`, not to `dist/`.
 
 ## Layout
 
