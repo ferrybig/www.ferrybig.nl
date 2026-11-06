@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Range coder simulation</title>
+	<style>
+		:root { color-scheme: light dark; }
+		body {
+			font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+			background: light-dark(#ffffff, #111111);
+			color: light-dark(#1a1d23, #e9ebee);
+			max-width: 880px;
+			margin: 0 auto;
+			padding: 16px;
+			line-height: 1.5;
+		}
+		.theme { float: right; }
+		h1 { font-size: 1.3rem; }
+	</style>
+</head>
+<body>
+	<label class="theme">
+		Theme
+		<select id="theme">
+			<option value="light dark">system</option>
+			<option value="light">light</option>
+			<option value="dark">dark</option>
+		</select>
+	</label>
+	<h1>Range coder simulation</h1>
+	<p>Development page. In a post the element is used as <code>&lt;geodata-range-coder&gt;</code>.</p>
+
+	<geodata-range-coder></geodata-range-coder>
+
+	<h2>Fixed to one direction and chunk</h2>
+	<p>The same chunk as above, decoded. At the last step it shows the same records as the encoder does.</p>
+	<geodata-range-coder mode="decode" example="blog"></geodata-range-coder>
+
+	<script>
+		document.getElementById("theme").addEventListener("change", (e) => {
+			document.documentElement.style.colorScheme = e.target.value;
+		});
+	</script>
+	<script type="module" src="/dist/geodata-range-coder.js"></script>
+</body>
+</html>
