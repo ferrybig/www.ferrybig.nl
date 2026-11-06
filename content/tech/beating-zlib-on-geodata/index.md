@@ -77,7 +77,7 @@ The decoder finds the neighbours cheaply: for every row and every column of the 
 
 ### Step 3: A range coder instead of zlib
 
-After steps 1 and 2, a chunk is nothing but a long list of yes/no decisions. Those are fed into a [range coder](https://en.wikipedia.org/wiki/Range_coding), the same kind as the one inside [LZMA](https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm) (and so in `xz` and 7-Zip). A range coder is a form of arithmetic coding: every decision comes with a probability, and a decision that was very likely costs very little, less than a bit:
+After steps 1 and 2, a chunk is nothing but a long list of yes/no decisions. **This is important in understanding the next step!**. We are now just working with a stream of individual bits!. Those bits are fed into a [range coder](https://en.wikipedia.org/wiki/Range_coding), the same kind as the one inside [LZMA](https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm) (and so in `xz` and 7-Zip). A range coder is a form of arithmetic coding: every decision comes with a probability, and a decision that was very likely costs very little, less than a bit:
 
 | Chance the guess is right | Cost when it is right |
 |---|---|
@@ -101,23 +101,7 @@ Why not Huffman? A Huffman code spends at least one whole bit for every symbol i
 
 So knowing what to predict (steps 1 and 2) already gets more than half of the way, even with plain zlib, and coding those predictions in fractions of a bit (step 3) does the rest.
 
-#### What is actually stored in a chunk
-
-A version 2 chunk holds three things: its palette (the place IDs it uses), a record count, and one range-coded stream. The depths are not stored at all. The stream encodes the quadtree itself.
-
-Decoding walks the tree from the root, in Morton order. Every node above the maximum depth first decodes one *split* decision: `1` gives four children (south-west, south-east, north-west, north-east), `0` makes the node a leaf. Each leaf is the next record, and its depth is the depth of the node it came from. Decoding stops after the record count is reached.
-
-Because Morton order visits the south-west and south-east quarters before the north ones, a node's west and south neighbours have always been decoded already. The decoder remembers the last record seen in each row and column of cells to find them. Those neighbours are what the palette index is predicted from:
-
-1. Is the index the same as the west neighbour's? One decision.
-2. If not, and the south neighbour has a different index, is it the same as the south neighbour's? One decision.
-3. Otherwise, code the index's rank in a move-to-front list of palette indices, skipping the two neighbours. The rank is written as an Elias gamma code, and each of its bits has its own probability.
-
-Move-to-front keeps recently used places near the front, so a chunk that uses a few common places codes most ranks in very few bits.
-
-Every decision looks up its probability in a *context*, a small table entry picked from the situation: the depth, what kind of neighbour is there (none, bigger, same size, or smaller), whether the west and south neighbours agree, and whether the previous record agreed with either. Each context starts at 50% and moves a sixteenth of the way towards each answer, as described above.
-
-#### The coder itself
+#### Trying to explain the black magic, the rang coder
 
 The probabilities are 12-bit integers, out of 4096. The decoder keeps two numbers: `range`, the width of the current interval, and `code`, where the encoded number sits inside that interval. To decode one decision with probability `p`:
 
@@ -137,7 +121,7 @@ Here I was right in my prompt. Working with bits is slower than working with byt
 
 | Operation                       | v1          | v2                                            |
 | ------------------------------- | ----------- | --------------------------------------------- |
-| decode every chunk              | 1.0-1.2 s   | 4.7-5.1 s (WebAssembly), 11-12 s (JavaScript) |
+| decode every chunk of high res  | 1.0-1.2 s   | 4.7-5.1 s (WebAssembly), 11-12 s (JavaScript) |
 | 32 tile burst, initial view z10 | 195 ms      | 212 ms                                        |
 | 32 tile burst, europe z4        | 1004 ms     | 3308 ms                                       |
 | cold query Paris / Tokyo        | 11.3 / 3.5  | 28.6 / 9.9 ms                                 |
@@ -145,7 +129,7 @@ Here I was right in my prompt. Working with bits is slower than working with byt
 
 The hope of winning speed back by dropping zlib only came true on the encoding side: the compressor is 9 times faster at writing chunks than zlib at its highest level.
 
-Remember the [WebAssembly decoder I reverted for version 1](/tech/geodata-72-to-45-mib#do-we-actually-need-to-store-the-morton-codes), because it only saved 16 microseconds per chunk? For version 2 it did come back, because here it is 2.4 times as fast as the JavaScript decoder. It follows the same rules as the version 0 decoder: it can only accept or decline a chunk, never report an error, and the JavaScript decoder stays the reference. A test feeds both 8,000 corrupted streams and checks that WebAssembly never accepts one that JavaScript rejects.
+Remember the [WebAssembly decoder I reverted for version 1](/tech/geodata-72-to-45-mib#do-we-actually-need-to-store-the-morton-codes), because it only saved 16 microseconds per chunk? For version 2 I deviced to bring it back, because here it is 2.4 times as fast as the JavaScript decoder. It follows the same rules as the version 0 decoder: it can only accept or decline a chunk, never report an error, and the JavaScript decoder stays the reference. A test feeds both 8,000 corrupted streams and checks that WebAssembly never accepts one that JavaScript rejects.
 
 A 3.3 times slower europe burst is far outside the 15% slowdown I normally allow for a reader change. I took it anyway, because tiles are not the main goal of this tool. The goal itself is resolving a WGS84 coordinate to a city, and nobody takes 100 photos per second all around the world, so the tool will be asked for answers more slowly than it can give them, even at 28.6 ms for a cold lookup. The tile burst at a normal zoom level barely changed anyway. A file that is less than half the size, on the other hand, makes it much easier to embed the tool in self-hosted software. The reader still reads version 0 and 1 files, and the compressor can still write version 1, so anyone who prefers speed over size can transcode a file back. Going version 1 → 2 → 1 gives back the exact same bytes.
 
