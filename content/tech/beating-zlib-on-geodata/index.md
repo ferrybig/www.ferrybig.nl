@@ -103,7 +103,7 @@ So knowing what to predict (steps 1 and 2) already gets more than half of the wa
 
 #### Trying to explain the black magic, the rang coder
 
-The probabilities are 12-bit integers, out of 4096. The decoder keeps two numbers: `range`, the width of the current interval, and `code`, where the encoded number sits inside that interval. To decode one decision with probability `p`:
+The probabilities are 12-bit integers, out of 4096, and `p` is always the chance that the decision is a `0`. The decoder keeps two numbers: `range`, the width of the current interval, and `code`, where the encoded number sits inside that interval. To decode one decision with probability `p`:
 
 ```text
 bound = (range >> 12) × p
@@ -111,7 +111,7 @@ if code < bound:  bit = 0,  range = bound
 else:             bit = 1,  code = code − bound,  range = range − bound
 ```
 
-The lower part of the interval has size `p / 4096` of the whole, and the decision picks which part to keep. This is the interval splitting from the diagram, written with integers. When `range` falls below 2²⁴, the decoder shifts in one more byte of the stream, so whole bytes are only read once their leading bits are settled. That is how a decision costing 0.005 bits can share a byte with its neighbours.
+The lower part of the interval is the `0` and has size `p / 4096` of the whole, the upper part is the `1`, and the decision picks which part to keep. This is the interval splitting from the diagram, written with integers. When `range` falls below 2²⁴, the decoder shifts in one more byte of the stream, so whole bytes are only read once their leading bits are settled. That is how a decision costing 0.005 bits can share a byte with its neighbours.
 
 The cost follows directly from the size of the part kept. At 99.6% (`p = 4081`), a decision that goes the likely way keeps 99.6% of the interval and costs about 0.005 bits. One that goes the unlikely way keeps 0.4% and costs about 8 bits. The probabilities learn the chunk as it is decoded, so the common case is cheap and the rare case pays for it.
 
