@@ -1,6 +1,6 @@
 import type {  ImportDeclaration } from 'estree';
 import type {  Root, RootContent, Element } from 'hast';
-import type {  MdxJsxTextElement } from 'mdast-util-mdx';
+import type {  MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { basename, dirname, join } from 'node:path/posix';
 import type {  Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
@@ -97,6 +97,33 @@ function transformNode(state: State, input: Element, urlAttribute: string): Root
 	return newElement as any;
 }
 
+/**
+ * A `<script src="relative/path.js">` written in a post is an MDX JSX element, not a
+ * hast element, so it is rewritten here: the file becomes an imported asset with a
+ * content hash in its name, like the images, and the tag gets the resulting URL.
+ */
+function transformScript(state: State, node: MdxJsxFlowElement): void {
+	const attribute = node.attributes.find((a) => a.type === 'mdxJsxAttribute' && a.name === 'src');
+	if (!attribute || typeof attribute.value !== 'string') return;
+	if (urlPattern.test(attribute.value)) return;
+
+	let url = join(state.relativePath, attribute.value);
+	if (!url.startsWith('../')) url = `./${url}`;
+	const name = getVariableNameForUrl(state, url);
+	attribute.value = {
+		type: 'mdxJsxAttributeValueExpression',
+		value: name,
+		data: {
+			estree: {
+				type: 'Program',
+				sourceType: 'module',
+				comments: [],
+				body: [{ type: 'ExpressionStatement', expression: { type: 'Identifier', name } }],
+			},
+		},
+	};
+}
+
 const rehypeMdxAssets: Plugin<[Options], Root> =
 	({inputFileName, outputFileName}) =>
 		(ast) => {
@@ -105,6 +132,11 @@ const rehypeMdxAssets: Plugin<[Options], Root> =
 			const imports: ImportDeclaration[] = [];
 			const imported = new Map<string, string>();
 
+
+			const state = { imported, imports, relativePath };
+			visit(ast as any, ['mdxJsxFlowElement', 'mdxJsxTextElement'], (node: MdxJsxFlowElement) => {
+				if (node.name === 'script') transformScript(state, node);
+			});
 
 			visit(ast, 'element', (node, index, parent) => {
 				if (node.tagName === 'img') {

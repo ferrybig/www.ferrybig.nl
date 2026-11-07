@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 350" width="820" height="350" role="img" aria-label="The same 16-record chunk as before, with the Morton order drawn as a path through the records. Each record is marked W when it has the same place as its west neighbour, S when it has the place of its south neighbour, and R when neither, and its palette index has to be coded as a rank in a move-to-front list. Record 24 is highlighted: the record before it in Morton order, 20, is Diemen, but its west neighbour, record 0, and its south neighbour, record 18, are both Amsterdam, and so is record 24.">
+	<title>Predicting a record from its west and south neighbours</title>
+	<style>
+		text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1a1d23; }
+		.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+		.ttl { font-size: 15px; font-weight: 700; }
+		.sub { font-size: 12px; font-weight: 600; fill: #5d6675; }
+		.note { font-size: 12px; fill: #5d6675; }
+		.step { font-size: 12.5px; }
+		.code { font-size: 9px; fill: #5d6675; }
+		.kind { font-size: 12px; font-weight: 700; }
+		.bg { fill: #ffffff; }
+		.cellA { fill: #f7e4e1; stroke: #a8322b; stroke-width: 0.9; }
+		.cellB { fill: #f7eddc; stroke: #9a6410; stroke-width: 0.9; }
+		.order { fill: none; stroke: #1a1d23; stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.55; }
+		.focus { fill: none; stroke: #1a1d23; stroke-width: 3; }
+		.nb { fill: none; stroke: #2a5db0; stroke-width: 2.5; }
+		.prev { fill: none; stroke: #2a5db0; stroke-width: 2; stroke-dasharray: 5 3; }
+		.nbtxt { fill: #2a5db0; font-weight: 700; }
+
+		@media (prefers-color-scheme: dark) {
+			text { fill: #e9ebee; }
+			.sub, .note, .code { fill: #9ba4b2; }
+			.bg { fill: #111111; }
+			.cellA { fill: #35211f; stroke: #e8776b; }
+			.cellB { fill: #2d2415; stroke: #e0a152; }
+			.order { stroke: #e9ebee; }
+			.focus { stroke: #e9ebee; }
+			.nb, .prev { stroke: #7aa7ff; }
+			.nbtxt { fill: #7aa7ff; }
+		}
+	</style>
+
+	<rect class="bg" x="0" y="0" width="820" height="350"/>
+
+	<text class="ttl" x="0" y="14">Guessing a record from what is already decoded</text>
+
+	<!-- ===================== left: the chunk ===================== -->
+	<text class="sub" x="0" y="38">W: same as west, S: same as south, R: rank</text>
+
+	<!-- depth 1 -->
+	<rect class="cellA" x="0" y="176" width="128" height="128"/>
+	<text class="mono code" x="64" y="234" text-anchor="middle">0</text><text class="kind" x="64" y="250" text-anchor="middle">R</text>
+	<rect class="cellA" x="0" y="48" width="128" height="128"/>
+	<text class="mono code" x="64" y="106" text-anchor="middle">32</text><text class="kind" x="64" y="122" text-anchor="middle">S</text>
+
+	<!-- south-east quadrant -->
+	<rect class="cellA" x="128" y="272" width="32" height="32"/><text class="mono code" x="144" y="283" text-anchor="middle">16</text><text class="kind" x="144" y="298" text-anchor="middle">W</text>
+	<rect class="cellB" x="160" y="272" width="32" height="32"/><text class="mono code" x="176" y="283" text-anchor="middle">17</text><text class="kind" x="176" y="298" text-anchor="middle">R</text>
+	<rect class="cellA" x="128" y="240" width="32" height="32"/><text class="mono code" x="144" y="251" text-anchor="middle">18</text><text class="kind" x="144" y="266" text-anchor="middle">W</text>
+	<rect class="cellB" x="160" y="240" width="32" height="32"/><text class="mono code" x="176" y="251" text-anchor="middle">19</text><text class="kind" x="176" y="266" text-anchor="middle">S</text>
+	<rect class="cellB" x="192" y="240" width="64" height="64"/><text class="mono code" x="224" y="268" text-anchor="middle">20</text><text class="kind" x="224" y="284" text-anchor="middle">W</text>
+	<rect class="cellA" x="128" y="176" width="64" height="64"/><text class="mono code" x="160" y="204" text-anchor="middle">24</text><text class="kind" x="160" y="220" text-anchor="middle">W</text>
+	<rect class="cellB" x="192" y="176" width="64" height="64"/><text class="mono code" x="224" y="204" text-anchor="middle">28</text><text class="kind" x="224" y="220" text-anchor="middle">S</text>
+
+	<!-- north-east quadrant -->
+	<rect class="cellA" x="128" y="144" width="32" height="32"/><text class="mono code" x="144" y="155" text-anchor="middle">48</text><text class="kind" x="144" y="170" text-anchor="middle">W</text>
+	<rect class="cellB" x="160" y="144" width="32" height="32"/><text class="mono code" x="176" y="155" text-anchor="middle">49</text><text class="kind" x="176" y="170" text-anchor="middle">R</text>
+	<rect class="cellA" x="128" y="112" width="32" height="32"/><text class="mono code" x="144" y="123" text-anchor="middle">50</text><text class="kind" x="144" y="138" text-anchor="middle">W</text>
+	<rect class="cellB" x="160" y="112" width="32" height="32"/><text class="mono code" x="176" y="123" text-anchor="middle">51</text><text class="kind" x="176" y="138" text-anchor="middle">S</text>
+	<rect class="cellB" x="192" y="112" width="64" height="64"/><text class="mono code" x="224" y="140" text-anchor="middle">52</text><text class="kind" x="224" y="156" text-anchor="middle">W</text>
+	<rect class="cellB" x="128" y="48" width="64" height="64"/><text class="mono code" x="160" y="76" text-anchor="middle">56</text><text class="kind" x="160" y="92" text-anchor="middle">R</text>
+	<rect class="cellB" x="192" y="48" width="64" height="64"/><text class="mono code" x="224" y="76" text-anchor="middle">60</text><text class="kind" x="224" y="92" text-anchor="middle">W</text>
+
+	<!-- the order the records are stored in -->
+	<polyline class="order" points="64,240 144,288 176,288 144,256 176,256 224,272 160,208 224,208"/>
+	<path class="order" d="M 224,208 C 300,180 280,40 150,44 C 110,46 80,80 64,112"/>
+	<polyline class="order" points="64,112 144,160 176,160 144,128 176,128 224,144 160,80 224,80"/>
+
+	<!-- record 24 and what is known when it is decoded -->
+	<rect class="nb" x="96" y="208" width="32" height="32"/>
+	<rect class="nb" x="128" y="240" width="32" height="32"/>
+	<rect class="prev" x="194" y="242" width="60" height="60"/>
+	<rect class="focus" x="128" y="176" width="64" height="64"/>
+
+	<rect class="cellA" x="0" y="322" width="11" height="11"/>
+	<text class="note" x="18" y="332">Amsterdam</text>
+	<rect class="cellB" x="104" y="322" width="11" height="11"/>
+	<text class="note" x="122" y="332">Diemen</text>
+	<path class="order" d="M 180,328 L 206,328"/>
+	<text class="note" x="212" y="332">Morton order</text>
+
+	<!-- ===================== right: the explanation ===================== -->
+	<text class="sub" x="300" y="38">Decoding record 24</text>
+
+	<text class="step" x="300" y="60">The record decoded just before it is <tspan font-weight="700">20</tspan>, which is</text>
+	<text class="step" x="300" y="78">Diemen. In Morton order the previous record is often</text>
+	<text class="step" x="300" y="96">not even touching the one you are decoding.</text>
+
+	<text class="step" x="300" y="122">The cell <tspan class="nbtxt">west</tspan> of 24's corner is in record 0, and the cell</text>
+	<text class="step" x="300" y="140"><tspan class="nbtxt">south</tspan> of it is record 18. Both have a lower Morton</text>
+	<text class="step" x="300" y="158">code, so both are always decoded already.</text>
+	<text class="step" x="300" y="176">Both are Amsterdam, and so is 24.</text>
+
+	<text class="step" x="300" y="202">Each leaf asks at most two yes/no questions first:</text>
+	<text class="step" x="314" y="220"><tspan font-weight="700">W</tspan>  same place as the west neighbour?</text><text class="step" x="660" y="220" text-anchor="end">8 of 16</text>
+	<text class="step" x="314" y="238"><tspan font-weight="700">S</tspan>  same place as the south neighbour?</text><text class="step" x="660" y="238" text-anchor="end">4 of 16</text>
+	<text class="step" x="314" y="256"><tspan font-weight="700">R</tspan>  neither: a rank in a list of the most</text>
+	<text class="step" x="332" y="274">recently used palette indices.</text><text class="step" x="660" y="274" text-anchor="end">4 of 16</text>
+
+	<text class="note" x="300" y="300">On the whole world: 74% W, 19% S, 7% R.</text>
+</svg>

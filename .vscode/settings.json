@@ -1,9 +1,12 @@
 {
 	"cSpell.words": [
+		"Benford's",
 		"brotli",
 		"browserslist",
+		"CGEODATA",
 		"Competa",
 		"datetime",
+		"Diemen",
 		"estree",
 		"ferrybig",
 		"gifsicle",
@@ -15,15 +18,20 @@
 		"lastmod",
 		"Loenhout",
 		"luxon",
+		"LZMA",
 		"Millis",
 		"minirouter",
 		"mkdirs",
+		"neighbour",
+		"neighbours",
 		"noopener",
 		"openscad",
 		"optipng",
 		"posthtml",
+		"quadtree",
 		"rehype",
 		"udoc",
+		"varint",
 		"Webp"
 	],
 }

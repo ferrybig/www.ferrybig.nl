@@ -4,16 +4,21 @@ tags: ["tech", "geo", "compression", "binary-format", "openstreetmap", "typescri
 coAuthors:
     - name: Claude Opus 5
       url: https://claude.com/claude-code
+    - name: Claude Sonnet 5.5
+      url: https://claude.com/claude-code
 thumbnail:
     image: ./the-netherlands.png
     link: https://geodata.ferrybig.nl/
     alt: Netherlands as mapped by this tool
 ---
-# Compressing the cities of the world into a mere 45 megabytes
+# Compressing the cities of the world into a mere 45 MiB
 
-I started [loc-to-city](https://github.com/ferrybig/loc-to-city) because my favorite photo manager kept telling me the wrong city. It has since turned into something I keep reaching for in other projects, so this post is about the tool and the file format it produces, not about the photo manager. The headline I still find hard to believe: every country, region and city boundary on Earth, at a resolution of roughly 300 by 150 metres, in a single 45 MB file that answers a lookup without ever reading more than a small slice of it.
+I started [loc-to-city](https://github.com/ferrybig/loc-to-city) because my favorite photo manager kept telling me the wrong city. It has since turned into something I keep reaching for in other projects, so this post is about the tool and the file format it produces, not about the photo manager. The headline I still find hard to believe: every country, region and city boundary on Earth, at a resolution of roughly 300 by 150 metres, in a single 45 MiB file that answers a lookup without ever reading more than a small slice of it.
 
-Every colleague I showed this to guessed the file would be ten to a hundred times bigger, so somewhere between 1 GB to around 10 GB. That is a fair guess for the obvious approaches: shipping the polygons themselves costs around 5.5 GB according to the filtered polygon list.
+Every colleague I showed this to guessed the file would be ten to a hundred times bigger, so somewhere between 1 GiB to around 10 GiB. That is a fair guess for the obvious approaches: shipping the polygons themselves costs around 5.1 GiB according to the filtered polygon list.
+
+> **Update 2026-11-04:** the numbers in this post are for version 1 of the file format, and how it got from 72 MiB to 45 MiB is told in [Two fixes that took the geodata file from 72 MiB to 45 MiB](/tech/geodata-72-to-45-mib). Version 2 stores the same data in 19.5 MiB, see [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
+
 ## What the tool actually is
 
 Five TypeScript packages.
@@ -26,7 +31,7 @@ Five TypeScript packages.
  
 The one that matters to users is **reader**, published as `@ferrybig/cgeodata-reader`, which has zero 3th party runtime dependencies (note that it uses either node [`zlib`](https://nodejs.org/api/zlib.html) or the browsers [`CompressionStream`](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream)).
 
-The format of the `.bin` file is documented at, [binary-format.md](https://github.com/ferrybig/loc-to-city/blob/master/reader/binary-format.md), I decided to work on the format first before making implementations. There has been 1 version bump in the binary format, when I realised I didn't need to include morton codes and a marker for "no result", I only needed to include one of the 2, I kept the no result marker.
+The format of the `.bin` file is documented at, [binary-format.md](https://github.com/ferrybig/loc-to-city/blob/master/reader/binary-format.md), I decided to work on the format first before making implementations. There has been 1 version bump in the binary format, when I realised I didn't need to include morton codes and a marker for "no result", I only needed to include one of the 2, I kept the no result marker ([how I got there](/tech/geodata-72-to-45-mib)). A second bump replaced zlib for the chunks with a compressor written for this data, which took the file from 45.4 MiB to 19.5 MiB, [described in its own post](/tech/beating-zlib-on-geodata).
 
 ## Why not just store one point per city?
 
@@ -44,7 +49,7 @@ The last case is my favorite. It looks "wrong", but if you look at the municipal
 
 ## Why not store the polygons then?
 
-The first off, they are 5.5GB uncompressed for worldwide coverage. It likely can be compressed to 500 MB with standard compression algo's (unverified claim), but this is still a lot of data. While a single polygon can be simplified, it is hard to do correctly.. During the development of the file format, I played around with simplified polygons for large countries like Russia and Germany. This created artifacts in the data that were unwanted.
+The first off, they are 5.1 GiB uncompressed for worldwide coverage. It likely can be compressed to 500 MiB with standard compression algo's (unverified claim), but this is still a lot of data. While a single polygon can be simplified, it is hard to do correctly.. During the development of the file format, I played around with simplified polygons for large countries like Russia and Germany. This created artifacts in the data that were unwanted.
 
 During development I benchmarked four approaches against each other on just *the Netherlands*, with exact point-in-polygon as the ground truth:
 
@@ -84,60 +89,32 @@ Note that mostly ones, twos and fours, in long runs, which is what zlib is good 
 
 The thing that makes this cheap is in the left half of that picture. A record costs the same whether it covers one cell or a quarter of the chunk, so the inside of a city is nearly free, and only the boundary is expensive. Boundaries are one-dimensional and area is two-dimensional, so we end up paying for the perimeter of the world's cities rather than for their surface.
 
-### The step 5 merging step
+### The codes are not stored
 
-A fun fact, step 5 of that article is only a recent change, I realized something important during the writing of this blog posts. Initially, once a cell was divided to the maximum, it was kept that way, **once a cell had been split, its children were never merged back.**. Four siblings that all resolved to the same place stayed four records, even though the parent cell covers exactly the same ground and gives exactly the same answer.
+The first row of that table, the Morton codes, is not in the file. The depths already say everything the codes do: in this example, after a record of depth 1 the next code is 16 higher, after depth 2 it is 4 higher, and after depth 3 it is 1 higher. A stretch of unplaced cells is an explicit "no place" record instead of a silent skip, so there are no jumps the depths can't explain. A reader gets the code of a cell by walking the chunk and adding up the steps as it goes. This is [CGEODATA version 1](https://github.com/ferrybig/loc-to-city/pull/7), and it is one of two changes that took the file from 72.4 MiB to 45.4 MiB. The other is that sibling cells which all resolved to the same place are merged back into their parent, which is already part of the build described above. How I found both is told in [Two fixes that took the geodata file from 72 MiB to 45 MiB](/tech/geodata-72-to-45-mib).
 
-I talked with Claude Opus about this, Opus didn't think it would be a significant improvement, because zlib's repeating value compression would see the pattern. My gut feeling was different, I didn't think of zlib, but just for 75% space saved for the records in questions. After testing, on the worldwide file as it then stood, a single bottom-up merge pass would have removed 45,954,924 of 166,081,761 records.
+### Can we beat zlib with our own compression?
 
-After the merge cascades build finished, I realized where both I and claude where wrong, namely because a merged parent can itself become one of four mergeable siblings, so even though the numbers didn't look great initially, the real reduction is **36.0% of the records, 166,081,761 down to 106,377,942**. And the file:
+After version 1, zlib was still doing the last step, and zlib has no idea that it is looking at a quadtree. That became CGEODATA version 2, where the chunks are written with a compressor that knows what a chunk is: **45.4 MiB down to 19.5 MiB**, at the cost of decoding that is about 4 times slower. It is a big enough story for its own post: [Beating zlib: the cities of the world in 19.5 MiB](/tech/beating-zlib-on-geodata).
 
-```
-                 before        after
-records     166,081,761  106,377,942   -36.0%
-bytes        75,935,694   64,244,778   -15.4%
-chunk bytes  73,911,162   62,220,461   -15.8%
-```
-
-zlib's loss on the shortened runs is real but small next to the win from dropping a third of the varint deltas: 5,748 chunks got smaller, 15 got bigger. Lookups got faster too: a cold query in the densest chunk went from 17.9 ms to 9.5 ms, because there is a third less to decode.
-
-The subtle part is the condition. It is not enough that four children each came back as a single record for the same place; they must each be a record *at the child depth*. A child that only one place touches a corner of also comes back as exactly one record, but a smaller and deeper one, and merging four of those hands the place all the empty cells in between. On the first worldwide build that invented 88,542 records of ocean, caught only because the output disagreed with an independent simulation by exactly that count.
-
-### Do we actually need to store the morton codes?
-
-As I was reviewing [the Claude drafted svg](https://github.com/ferrybig/www.ferrybig.nl/blob/9bdd8b81b7d8c47672eddfd68d5b4732be2c08eb/content/tech/compressing-the-world-into-61-megabytes/quadtree-to-columns.svg) of the quadtree, I realized another aspect. Looking at the "array" section, the depth and the codes have relationships! If depth is 1, the next code is 16, If depth is 2, the next code is 4, if depth is 3, the next code is 1. The only thing that ever broke the pattern was a gap, a stretch of unplaced cells between two records. Make the gap an explicit record instead of a silent skip, and there is nothing left for the codes array to say that the depths array does not already say: a reader can get a cell's code by walking the chunk and adding up depths as it goes.
-
-That became [CGEODATA version 1](https://github.com/ferrybig/loc-to-city/pull/7): the codes array is gone, and an empty stretch of cells is now an explicit "no place" record instead of a silent skip. Measured on the real rebuilt file, not a prototype:
-
-```
-             v0, codes stored   v1, codes derived
-records          106,377,942          110,148,645    +3.5%
-bytes             64,244,778           47,620,804   -25.9%
-chunk bytes       62,220,461           45,596,905   -26.7%
-```
-
-The extra 3,770,703 records are the gaps, which used to cost nothing and now cost one record each. They are cheap anyway: a long run of identical depths and index-0 palette indices is exactly what zlib likes. Losing the codes array outright pays for them several times over.
-
-I asked claude to make a version 1 chunks WebAssembly decoder version 0 already had, then reverted it a day later. Measured across the whole file, deriving codes in WebAssembly instead of plain JavaScript saved about 16 microseconds per chunk, not enough to justify a second compiled decoder and its own fuzz tests. Version 0 files still decode through WebAssembly; version 1 does not. The honest cost of that shows up in a cold lookup: Paris, which used to resolve in 9.5 ms, now takes about 13 ms, because the arithmetic a compiled module used to do now runs as plain JavaScript on every chunk a query happens to land in. The file got smaller and a cold query got slower, in the same release. Even then, 13ms is pretty fast considering how often geocoding happens...
-
-## How does 17 billion cells fit in 45 MB?
+## How does 17 billion cells fit in 45 MiB?
 
 Let me do the arithmetic that makes this sound impossible first.
 
 The worldwide file uses a 128 × 128 grid of chunks and a quadtree depth of 10, which works out to 131,072 × 131,072 cells across the planet. That is **17,179,869,184** cells, each about 306 m wide and 152 m tall at the equator. There are 274,171 distinct places, so a place id needs 19 bits. If we stored one id per cell we would need
 
 ```
-17,179,869,184 cells × 19 bits = about 40 GB
+17,179,869,184 cells × 19 bits = about 38 GiB
 ```
 
-Nobody would ship that. It is just the upper bound the grid starts from, before any of the structure below is applied. The actual file is 47,620,804 bytes, so **857 times smaller** than the dense grid, and 115 times smaller than the 5.5 GB of polygons it was built from.
+Nobody would ship that. It is just the upper bound the grid starts from, before any of the structure below is applied. The actual file is 47,620,804 bytes, so **857 times smaller** than the dense grid, and 115 times smaller than the 5.1 GiB of polygons it was built from.
 
-Where does it go? The quadtree collapses those 17.18 billion cells into **110,148,645 records on disk** — 106,377,942 real places plus 3,770,703 explicit gaps, now that a gap needs its own record rather than a skipped code — a factor of 156 on its own. Then those records are stored in 47.6 MB, which works out to **0.43 bytes per record**: a depth and a place reference, well under half a byte each.
+Where does it go? The quadtree collapses those 17.18 billion cells into **110,148,645 records on disk** — 106,377,942 real places plus 3,770,703 explicit gaps, now that a gap needs its own record rather than a skipped code — a factor of 156 on its own. Then those records are stored in 45.4 MiB, which works out to **0.43 bytes per record**: a depth and a place reference, well under half a byte each. [Version 2](/tech/beating-zlib-on-geodata) stores the same records in 19.6 MiB, 1.34 bits per record.
 
 Three things get us there. The prototype measured the last two on a 954,497-record dataset, so I can put real numbers on them:
 
 1. **Don't store cells, store leaves.** The quadtree collapses every uniform area into one record. This is the big one, and it is the one that makes the other two possible.
-2. **Delta-code the sorted codes as varints.** Consecutive Morton codes are close together, so most deltas fit in one or two bytes instead of a fixed eight. The code stream went from 7.6 MB to under 1 MB, and the whole blob from 7,744,895 bytes to 3,824,888. (The shipped format has since gone one step further and dropped codes from storage entirely — covered above.)
+2. **Delta-code the sorted codes as varints.** Consecutive Morton codes are close together, so most deltas fit in one or two bytes instead of a fixed eight. The code stream went from 7.2 MiB to under 1 MiB, and the whole blob from 7,744,895 bytes to 3,824,888. (The shipped format has since gone one step further and dropped codes from storage entirely — covered above.)
 3. **Then zlib it.** 632,143 bytes, 12× smaller than the naive fixed-width encoding with the drawback of loosing random access
 
 The step I did not expect to matter is hiding in there, and it does not show up on its own: **storing the two ~~three~~ arrays separately rather than as a list of records.** That change is free. The same numbers go into the file in the same order, just grouped by kind instead of by record, so it saves nothing at all before compression. What it does is put all the depths next to each other, and all the palette indices next to each other, and all the small deltas next to each other, so the compressor finally has runs to find instead of a stream of interleaved unrelated bytes. Reordering nothing is what made step 3 worth 6×.
@@ -148,14 +125,16 @@ let me answer that with a table
 
 | Method       | Size     | NodeJS support | Browser supported |
 |--------------|----------|----------------|-------------------|
-| Uncompressed | 247.8 MB | yes            | yes               |
-| Deflate      | 45.6 MB  | yes            | yes               |
-| Gzip         | 45.7 MB  | yes            | yes               |
-| Brotli       | 38.7 MB  | yes            | partial           |
-| Zstd         | 38.8 MB  | experimental   | no                |
-| xz           | 37.5 MB  | no             | no                |
+| Uncompressed | 236.3 MiB | yes            | yes               |
+| Deflate      | 43.5 MiB  | yes            | yes               |
+| Gzip         | 43.6 MiB  | yes            | yes               |
+| Brotli       | 36.9 MiB  | yes            | partial           |
+| Zstd         | 37.0 MiB  | experimental   | no                |
+| xz           | 35.8 MiB  | no             | no                |
 
 I used deflate anyway, because any compression with the delta-varint columnar layout had already captured most of the available gain, and because deflate is a compressor that is built into both Node.js (`zlib.inflateSync`) and every browser (`DecompressionStream('deflate')`). Paying a native addon or a WASM blob as a dependency, in exchange for 18%, in a library whose entire selling point is that it has no dependencies, was not a trade I wanted.
+
+In version 2, the chunks don't use deflate anymore, but a range coder that is part of the reader itself ([see the follow-up post](/tech/beating-zlib-on-geodata)), and that one beats every row of this table by a wide margin. The name blocks are still deflated.
 
 ## What does the file look like?
 
@@ -167,20 +146,20 @@ The directory is the part that makes partial reads work. It lists the byte lengt
 
 The place table is the other surprise. All 274,171 names, with their hierarchy and their alternative spellings, are 2,000,931 bytes. **4.2% of the file.** The hierarchy itself is almost free because it is never stored as parent pointers: places are numbered so that all countries come first, then all regions grouped by country, then all cities grouped by region, and the file only records *how many children each parent has*. Parent lookup is a binary search over a prefix sum.
 
-Names are split into blocks of 128 and each block is deflated separately, so recovering one name means inflating about two kilobytes rather than two megabytes. I tested several block sizes on the worldwide file:
+Names are split into blocks of 128 and each block is deflated separately, so recovering one name means inflating about 2 KiB rather than 2 MiB. I tested several block sizes on the worldwide file:
 
 | Names per block | Place table | Resolving one place | Scanning every name |
 |---|---|---|---|
-| 8192 | 1.64 MB | 4.9 ms | 134 ms |
-| 512 | 1.82 MB | 0.9 ms | 141 ms |
-| 128 | 2.05 MB | 0.7 ms | 152 ms |
-| 32 | 2.53 MB | 1.4 ms | 210 ms |
+| 8192 | 1.56 MiB | 4.9 ms | 134 ms |
+| 512 | 1.74 MiB | 0.9 ms | 141 ms |
+| 128 | 1.96 MiB | 0.7 ms | 152 ms |
+| 32 | 2.41 MiB | 1.4 ms | 210 ms |
 
 128 is the sweet spot. Below that the per-block zlib framing and the longer length table start costing more than the finer granularity saves.
 
-## How is a lookup fast when the file is 45 MB?
+## How is a lookup fast when the file is 45 MiB?
 
-It never reads the full 45 MB. A lookup reads the header and the directory once (about 23 KB), and after that it reads exactly one chunk, inflates it, and binary searches it. Most chunks are a few kilobytes; the very worst one in the world, a square covering Belgium and the French border, is 155 KB compressed and holds 270,514 records. Nothing else in the file is touched.
+It never reads the full 45 MiB. A lookup reads the header and the directory once (about 22 KiB), and after that it reads exactly one chunk, inflates it, and binary searches it. Most chunks are a few KiB; the very worst one in the world, a square covering Belgium and the French border, is 151 KiB compressed and holds 270,514 records. Nothing else in the file is touched.
 
 From the benchmark suite, on the worldwide file:
 
@@ -190,10 +169,10 @@ query, cold   Paris / Tokyo / Amsterdam  13.03 / 3.56 / 3.77 ms
 query, warm                               0.06 ms
 search "berlin" --sort, cold / warm      37.04 / 1.70 ms
 300 cold lookups, concurrent            192.08 ms
-memory after open                         100 MB RSS
+memory after open                         100 MiB RSS
 ```
 
-The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs well under a tenth of a millisecond, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
+These are version 1 numbers; with [version 2](/tech/beating-zlib-on-geodata) a cold Paris query takes 28.6 ms and a cold Tokyo query 9.9 ms, since a range coded chunk is slower to decode. The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs well under a tenth of a millisecond, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
 
 ## How can search be fast when it matches anything?
 
@@ -208,7 +187,7 @@ Two details make it actually work:
 
 What about one- and two-character queries, which have no trigram at all and match nearly everything? We cannot index our way out of that, so the file just stores the answer: for every one- and two-character string that occurs anywhere in any name, the top five places in relevance order, precomputed. 25,497 keys, about 365 KiB, binary searched by key.
 
-The whole search index is 4.26 MB against a 45 MB main file. Measured end to end, opening both files fresh for every query:
+The whole search index is 4.06 MiB against a 45 MiB main file. Measured end to end, opening both files fresh for every query:
 
 | | 1 char | 2 chars | 3 chars | 5 chars | 8 chars |
 |---|---|---|---|---|---|
@@ -241,10 +220,10 @@ A sample of what is actually out there:
 
 ## Things that surprised me
 
-* **Simplifying the polygons made the output file bigger.** I was simplifying region boundaries at a ~1.1 km tolerance to keep build times sane. Turning that off entirely took the worldwide file of the day from 75.7 MB to 73.0 MB, and from 166.8 to 159.4 million records, because simplified neighbours overlap each other, and every overlap is an ambiguity that forces extra subdivision to resolve. It also un-broke Campione d'Italia, Vatican City and Monaco, which had been simplified into slivers too coarse to contain their own cities.
-* **Chasing precision made it worse too.** The first design pushed every ambiguous cell down to a ~10 m floor. 17.7 million records, 135 MB, which lost to the 112 MB baseline it was supposed to beat. Capping the recursion much shallower and resolving what is left at build time is the entire difference between a failed prototype and a working format. But then things happen and another discovery is made that makes the output file smaller...
+* **Simplifying the polygons made the output file bigger.** I was simplifying region boundaries at a ~1.1 km tolerance to keep build times sane. Turning that off entirely took the worldwide file of the day from 72.2 MiB to 69.6 MiB, and from 166.8 to 159.4 million records, because simplified neighbours overlap each other, and every overlap is an ambiguity that forces extra subdivision to resolve. It also un-broke Campione d'Italia, Vatican City and Monaco, which had been simplified into slivers too coarse to contain their own cities.
+* **Chasing precision made it worse too.** The first design pushed every ambiguous cell down to a ~10 m floor. 17.7 million records, 129 MiB, which lost to the 107 MiB baseline it was supposed to beat. Capping the recursion much shallower and resolving what is left at build time is the entire difference between a failed prototype and a working format. But then things happen and another discovery is made that makes the output file smaller, see [the post about that](/tech/geodata-72-to-45-mib)...
 * **45% of the build was a single function call.** A CPU profile showed nearly half of all samples inside `@turf/intersect`, running exact arbitrary-precision arithmetic, called only to decide which candidate covered the largest share of an ambiguous cell. Replacing it with a 5 × 5 grid of sample points gave byte-identical output at roughly 5× the speed, because the question never needed an exact area in the first place.
-* **The thing that looked like an afterthought was the file.** In one early Europe build, the compressed spatial index was 4.5 KB and the *uncompressed city name strings* were 7.42 MB: 99.94% of the file. Compressing the part I had never thought about made it 4.5× smaller.
+* **The thing that looked like an afterthought was the file.** In one early Europe build, the compressed spatial index was 4.4 KiB and the *uncompressed city name strings* were 7.08 MiB: 99.94% of the file. Compressing the part I had never thought about made it 4.5× smaller.
 * **One hardcoded constant deleted Ireland.** An assumption that counties live at `admin_level=4` silently dropped 54,361 Irish city candidates, plus most of Estonia and Portugal. Ireland uses level 6.
 * **Async made it slower.** Running zlib asynchronously, which looks like the obviously correct non-blocking choice, made the tile-burst benchmark 15 to 40% worse. Async file reads cost about 10% and were worth keeping; async inflate was not.
 * **Turf.js gave wrong answers at country scale.** `booleanContains` and `booleanIntersects` claimed containment for regions where sampled points demonstrably fell outside. Both are now a hand-written Liang-Barsky segment/rectangle classifier.
