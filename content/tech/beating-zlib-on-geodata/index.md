@@ -73,7 +73,7 @@ The decoder finds the neighbours cheaply: for every row and every column of the 
 After steps 1 and 2, a chunk is nothing but a long list of yes/no decisions. Those bits are then fed into a [range coder](https://en.wikipedia.org/wiki/Range_coding), the same kind as the one inside [LZMA](https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm) (and so in `xz` and 7-Zip). A range coder is a form of arithmetic coding: every decision comes with a probability, and a decision that was very likely costs very little, less than a bit:
 
 | Chance the guess is right | Cost when it is right |
-|---|---|
+| --- | --- |
 | 50% | 1 bit |
 | 90% | 0.15 bits |
 | 99% | 0.015 bits |
