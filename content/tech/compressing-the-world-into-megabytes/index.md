@@ -150,7 +150,7 @@ The place table is the other surprise. All 274,171 names, with their hierarchy a
 Names are split into blocks of 128 and each block is deflated separately, so recovering one name means inflating about 2 KiB rather than 2 MiB. I tested several block sizes on the worldwide file:
 
 | Names per block | Place table | Resolving one place | Scanning every name |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 8192 | 1.56 MiB | 4.9 ms | 134 ms |
 | 512 | 1.74 MiB | 0.9 ms | 141 ms |
 | 128 | 1.96 MiB | 0.7 ms | 152 ms |
@@ -165,7 +165,7 @@ It never reads the full 45 MiB. A lookup reads the header and the directory once
 From the benchmark suite, on the worldwide file:
 
 | Operation | Case | Result |
-|---|---|---|
+| --- | --- | --- |
 | open | | 10.30 ms |
 | query | cold, Paris / Tokyo / Amsterdam | 13.03 / 3.56 / 3.77 ms |
 | query | warm | 0.06 ms |
@@ -191,7 +191,7 @@ What about one- and two-character queries, which have no trigram at all and matc
 The whole search index is 4.06 MiB against a 72 MiB main file. Measured end to end, opening both files fresh for every query:
 
 | | 1 char | 2 chars | 3 chars | 5 chars | 8 chars |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | With the index | 11 ms | 10 ms | 26 ms | 13 ms | 12 ms |
 | Without | 181 ms | 141 ms | 138 ms | 136 ms | 135 ms |
 
@@ -229,7 +229,6 @@ A sample of what is actually out there:
 * **Async made it slower.** One goal I had was that the library count also be used from a browser session, the simplistic solution was ["infecting"](https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/) everything with async/await. One purpose the tool has, is the demo server. This is many lookups in the exact same chunk. Each chunk being awaited had a significant overhead, so I had to make a non promise based method that could return `null` to say the user needed to call promise based method.
 * **Turf.js gave wrong answers at country scale.** `booleanContains` and `booleanIntersects` claimed containment for regions where sampled points demonstrably fell outside. Both are now a hand-written Liang-Barsky segment/rectangle classifier.
 * **Every time I thought the build speed couldn't be improved, Claude proved me wrong.** The current compressor is 1000 times faster than the initial "prototype" version. We went from 28 hours to 4.8 minutes
-
 
 ## Try it
 
