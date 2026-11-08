@@ -39,11 +39,11 @@ The format of the `.bin` file is documented at [binary-format.md](https://github
 
 Cities are not points. *They are irregular polygons*, and a big city's label point is often further from you than a small neighbour's label point even while you are standing well inside the big city. In this tool, we only fall back to cities as points when there is no better polygon source. When seeing cities as points, there are a lot of places that go wrong, for example
 
-```
-52.034656, 4.388124  is Den Haag, not Nootdorp
-51.970738, 4.123725  is Europoort, not Hoek van Holland
-52.683459, 5.295410  is Lelystad, not Enkhuizen
-```
+| Coordinates | Actual location | Returned as |
+| --- | --- | --- |
+| [52.034656, 4.388124](https://geodata.ferrybig.nl/#map=12/52.034656/4.388124) | Den Haag | Nootdorp |
+| [51.970738, 4.123725](https://geodata.ferrybig.nl/#map=12/51.970738/4.123725) | Europoort | Hoek van Holland |
+| [52.683459, 5.295410](https://geodata.ferrybig.nl/#map=12/52.683459/5.295410) | Lelystad | Enkhuizen |
 
 The last case is my favourite. It looks "wrong", but if you look at the municipal border records, it is actually correct. The border of Lelystad goes over the water to the edge of the provincial border.
 
@@ -54,7 +54,7 @@ First off, they are 5.1 GiB uncompressed for worldwide coverage. It likely can b
 During development I benchmarked four approaches against each other on just *the Netherlands*, with exact point-in-polygon as the ground truth:
 
 | | Approach | On disk(uncompressed) | Accuracy | Query |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | A | Nearest labelled point | 55 KiB | 26 to 46% | ~14 to 21 µs |
 | B | Exact point-in-polygon | 41.5 MiB | 100% (it *is* the truth) | ~24 to 41 µs |
 | C | Adaptive grid, polygons as fallback | 0.60 MiB + the polygons | 100% | ~6 µs inside, ~39 µs near a border |
