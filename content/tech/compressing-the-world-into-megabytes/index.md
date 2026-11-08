@@ -164,14 +164,14 @@ It never reads the full 45 MiB. A lookup reads the header and the directory once
 
 From the benchmark suite, on the worldwide file:
 
-```
-open                                     10.30 ms
-query, cold   Paris / Tokyo / Amsterdam  13.03 / 3.56 / 3.77 ms
-query, warm                               0.06 ms
-search "berlin" --sort, cold / warm      37.04 / 1.70 ms
-300 cold lookups, concurrent            192.08 ms
-memory after open                         100 MiB RSS
-```
+| Operation | Case | Result |
+|---|---|---|
+| open | | 10.30 ms |
+| query | cold, Paris / Tokyo / Amsterdam | 13.03 / 3.56 / 3.77 ms |
+| query | warm | 0.06 ms |
+| search "berlin" --sort | cold / warm | 37.04 / 1.70 ms |
+| 300 lookups | cold, concurrent | 192.08 ms |
+| memory | after open | 100 MiB RSS |
 
 These are from the 45 MiB build, (which at the moment is still the present version) with [version 2](/tech/beating-zlib-on-geodata) a cold Paris query takes 28.6 ms and a cold Tokyo query 9.9 ms, since a range coded chunk is slower to decode. The cold numbers are entirely "how big is the chunk the query landed in". Paris is in a dense chunk; Amsterdam is not. Once a chunk is decoded it stays in an LRU cache, and then a lookup costs well under a tenth of a millisecond, which is why the map tile renderer in the demo is usable at all: neighbouring pixels share a chunk.
 
