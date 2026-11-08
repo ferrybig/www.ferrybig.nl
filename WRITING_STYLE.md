@@ -19,12 +19,12 @@ so future posts (by me or an assistant) stay consistent.
   "Wrapping up" recap.
 - **Show the reasoning, not just the answer.** Explain *why* a tool/flag/approach
   was chosen over the alternative (why a Python wrapper instead of bash, why
-  `xargs` vs a `while` loop, etc.) — walk through the thought process.
+  `xargs` vs a `while` loop, etc.), walk through the thought process.
 - **Build commands/examples incrementally.** Start from a minimal version and
   evolve it step by step into the final script, rather than dropping the final
   version straight away.
 - Minor typos and slightly informal phrasing are fine and consistent with past
-  posts ("Lets take a look", "Image you have a pipeline") — don't over-polish.
+  posts ("Lets take a look", "Image you have a pipeline"), don't over-polish.
 - Cite sources: link out to official docs, bug trackers, forum threads, GitHub
   gists/repos when they informed the post. Cross-link other posts on this site
   with relative paths, e.g. `[header file](/tech/curl-header-file)`.
@@ -103,7 +103,7 @@ asset-rewriting pass. Practically, that means:
   or option lists. Tables are used freely to show data (e.g. the SQL post's
   `Course`/`Teacher` tables).
 - **Smart typography** (`remark-smartypants`): straight quotes/dashes get
-  turned into curly quotes/en-dashes automatically — no need to type `’` etc.
+  turned into curly quotes/en-dashes automatically, no need to type `’` etc.
   by hand.
 - **Headings get anchors and auto-sectioned** (`rehype-slug` + sectionize):
   every `##` heading becomes a linkable, `<section>`-wrapped block. No manual
@@ -113,12 +113,12 @@ asset-rewriting pass. Practically, that means:
   of numbers; use a table instead. Standard triple-backtick fences with a
   language tag.
   `rehype-pretty-code` (Shiki, `material-theme-darker` / `material-theme-lighter`)
-  handles highlighting with light/dark variants baked in at build time — no
+  handles highlighting with light/dark variants baked in at build time, no
   client JS needed to re-highlight.
   - Meta string after the language supports extra options, e.g.:
     ```` ```bash showLineNumbers title="update.sh" ````
-    - `showLineNumbers` — adds line numbers.
-    - `title="..."` — shows a filename/title above the block.
+    - `showLineNumbers`, adds line numbers.
+    - `title="..."`, shows a filename/title above the block.
 - **Images and links to local files** (`<img>`/`<a href>`/`<source>` with a
   relative, non-absolute URL) are automatically rewritten into real ES
   imports by `rehypeMdxAssets`, so images get processed/optimized by Next's
@@ -141,7 +141,7 @@ asset-rewriting pass. Practically, that means:
   The `remarkMdxEvalCodeBlock` plugin detects the `eval` meta flag and injects
   an `<HtmlPreview html="...">` component right after the code block. That
   component (`app/_components/HtmlPreview.tsx`) is a client component that
-  mounts a **Shadow DOM** and sets `shadow.innerHTML` to the raw HTML — so any
+  mounts a **Shadow DOM** and sets `shadow.innerHTML` to the raw HTML, so any
   `<style>` tags inside the example are sandboxed and can't leak into (or be
   affected by) the rest of the page's CSS.
 - **`js`/`jsx`/`javascript` eval blocks** work similarly but differently
@@ -158,4 +158,4 @@ asset-rewriting pass. Practically, that means:
   (`feed.atom.xml`, `feed.json`, `feed.rss.xml`) per category/tag.
 - `next build --webpack` then statically exports the whole site into `out/`.
 - `md-compiler/out` is just the *compiled compiler tool itself* (TS → JS), not
-  per-post output — don't confuse it with `app/` or `out/`.
+  per-post output, don't confuse it with `app/` or `out/`.
