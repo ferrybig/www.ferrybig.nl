@@ -8,7 +8,7 @@ import nextPlugin from '@next/eslint-plugin-next';
 export default [
 	eslint.configs.recommended,
 	{
-		ignores: ['out/**', 'app/*.js', 'md-compiler/out/**', '.next/**'],
+		ignores: ['out/**', 'app/*.js', 'md-compiler/out/**', '.next/**', 'simulations/**'],
 	},
 	{
 		files: ['**/*.{js,jsx,ts,tsx,mjs}'],

@@ -98,7 +98,9 @@ then `rehype-pretty-code`, `rehype-slug`, sectionize, accessible emojis, and an
 asset-rewriting pass. Practically, that means:
 
 - **GitHub-flavored Markdown**: tables, task lists, strikethrough, autolinks
-  all work normally. Tables are used freely to show data (e.g. the SQL post's
+  all work normally. **Prefer a table over a code block for any tabular or
+  column-aligned data**, such as benchmark results, measurements, comparisons,
+  or option lists. Tables are used freely to show data (e.g. the SQL post's
   `Course`/`Teacher` tables).
 - **Smart typography** (`remark-smartypants`): straight quotes/dashes get
   turned into curly quotes/en-dashes automatically — no need to type `’` etc.
@@ -106,7 +108,10 @@ asset-rewriting pass. Practically, that means:
 - **Headings get anchors and auto-sectioned** (`rehype-slug` + sectionize):
   every `##` heading becomes a linkable, `<section>`-wrapped block. No manual
   `{#id}` syntax needed.
-- **Code blocks** use standard triple-backtick fences with a language tag.
+- **Code blocks** are for actual code, commands, config, and output that is
+  really a program's text. Don't use one for tabular data or aligned columns
+  of numbers; use a table instead. Standard triple-backtick fences with a
+  language tag.
   `rehype-pretty-code` (Shiki, `material-theme-darker` / `material-theme-lighter`)
   handles highlighting with light/dark variants baked in at build time — no
   client JS needed to re-highlight.

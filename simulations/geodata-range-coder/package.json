@@ -1,0 +1,25 @@
+{
+  "name": "geodata-range-coder-simulation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive step-through of how a CGEODATA version 2 chunk is range coded and decoded, for the blog post Beating zlib on geodata",
+  "scripts": {
+    "dev": "node build.mjs dev",
+    "build": "node build.mjs build",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "motion": "^14.7.1",
+    "preact": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

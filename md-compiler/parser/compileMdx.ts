@@ -1,6 +1,8 @@
 import { dirname } from 'node:path/posix';
 import { compile } from '@mdx-js/mdx';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import rehypePrettyCode from 'rehype-pretty-code';
 import remarkSmartypants from 'remark-smartypants';
 import rehypeSlug from 'rehype-slug';
@@ -19,11 +21,14 @@ export async function compileMdx(inputFileName: string, outputFileName: string, 
 			remarkPlugins: [
 				[remarkMdxEvalCodeBlock],
 				[remarkGfm],
+				[remarkMath],
 				[remarkSmartypants as any],
 			],
 			rehypePlugins: [
 				[setImageSize, { dir: dirname(inputFileName) }],
 				[rehypeMdxAssets, { inputFileName, outputFileName}],
+				// MathML only: rendered by the browser, so no KaTeX css or fonts to ship
+				[rehypeKatex, { output: 'mathml' }],
 				[rehypePrettyCode as any, { theme: {
 					dark: 'material-theme-darker',
 					light: 'material-theme-lighter',

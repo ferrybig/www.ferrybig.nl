@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "concurrently -n NextJS,Markdown -c green,blue --kill-others \"npm run --silent dev-frontend\" \"cd md-compiler && npm --silent run dev\"",
     "dev-frontend": "next dev -p 2999 --webpack",
-    "build": "cd md-compiler && npm --silent run build && cd .. && npm --silent run build-frontend",
+    "build-simulations": "cd simulations/geodata-range-coder && (test -d node_modules || npm ci) && npm run build",
+    "build": "npm --silent run build-simulations && cd md-compiler && npm --silent run build && cd .. && npm --silent run build-frontend",
     "build-frontend": "next build --webpack",
     "build-via-docker": "rm -fr out && docker build -t www.ferrybig.nl:files --target export . -o out",
     "start-frontend": "serve out -p 2999",

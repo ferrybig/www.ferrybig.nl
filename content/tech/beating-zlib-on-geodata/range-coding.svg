@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 608" width="820" height="608" role="img" aria-label="How a range coder narrows an interval for five decisions, with the answers 0, 0, 0, 0 and 1. Each row is the current interval, zoomed to full width. Its left, lower part is the 0 outcome, with width equal to the probability of a 0, and its right, upper part is the 1 outcome. The chosen part becomes the interval for the next row. The probability of a 0 starts at 50% and rises to 61.4% as 0s are seen. The decisions cost 1, 0.913, 0.835, 0.766 and 1.372 bits, 4.89 bits in total. The final interval runs from 0.0537 to 0.0876, and the number 0.0625 inside it encodes all five decisions.">
+	<title>How a range coder narrows an interval</title>
+	<style>
+		text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1a1d23; }
+		.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+		.ttl { font-size: 15px; font-weight: 700; }
+		.note { font-size: 12px; fill: #5d6675; }
+		.step { font-size: 13px; font-weight: 700; }
+		.val { font-size: 11.5px; fill: #5d6675; }
+		.part { font-size: 11.5px; font-weight: 600; }
+		.on { fill: #ffffff; }
+		.bg { fill: #ffffff; }
+		.bit0On { fill: #2a5db0; }
+		.bit1On { fill: #a8322b; }
+		.off { fill: #eef0f3; stroke: #b9bfca; stroke-width: 0.8; }
+		.chain { fill: none; stroke: #5d6675; stroke-width: 0.9; stroke-dasharray: 3 3; opacity: 0.7; }
+		.panel { fill: #f5f6f8; }
+		.marker { stroke: #1a1d23; stroke-width: 1.6; }
+	</style>
+	<rect class="bg" x="0" y="0" width="820" height="608"/>
+
+	<text class="ttl" x="30" y="32">Each decision narrows the interval</text>
+	<text class="note" x="30" y="52">Start with [0, 1). A 0 keeps the lower part of the current interval, a 1 keeps the upper part.</text>
+	<text class="note" x="30" y="68">The width of each part is the probability of that answer. The chosen part is zoomed to full width.</text>
+
+	<!-- connectors from the chosen part of each row to the full-width bar below -->
+	<path class="chain" d="M260 124 V158 M460 124 L660 158"/>
+	<path class="chain" d="M260 192 V226 M472.5 192 L660 226"/>
+	<path class="chain" d="M260 260 V294 M484.2 260 L660 294"/>
+	<path class="chain" d="M260 328 V362 M495.2 328 L660 362"/>
+	<path class="chain" d="M505.5 396 L260 430 M660 396 V430"/>
+
+	<!-- row 1: p = 0.500, bit 0 -->
+	<text class="step" x="30" y="104">decision 1</text>
+	<text class="val mono" x="30" y="120">p(0) 0.500</text>
+	<rect class="bit0On" x="260" y="90" width="200" height="34"/>
+	<rect class="off" x="460" y="90" width="200" height="34"/>
+	<text class="part on" x="360" y="111" text-anchor="middle">0: 50.0%</text>
+	<text class="part note" x="560" y="111" text-anchor="middle">1: 50.0%</text>
+	<text class="step" x="680" y="104">bit 0</text>
+	<text class="val mono" x="680" y="120">1.000 bit</text>
+
+	<!-- row 2: p = 0.531, bit 0 -->
+	<text class="step" x="30" y="172">decision 2</text>
+	<text class="val mono" x="30" y="188">p(0) 0.531</text>
+	<rect class="bit0On" x="260" y="158" width="212.5" height="34"/>
+	<rect class="off" x="472.5" y="158" width="187.5" height="34"/>
+	<text class="part on" x="366.3" y="179" text-anchor="middle">0: 53.1%</text>
+	<text class="part note" x="566.3" y="179" text-anchor="middle">1: 46.9%</text>
+	<text class="step" x="680" y="172">bit 0</text>
+	<text class="val mono" x="680" y="188">0.913 bits</text>
+
+	<!-- row 3: p = 0.561, bit 0 -->
+	<text class="step" x="30" y="240">decision 3</text>
+	<text class="val mono" x="30" y="256">p(0) 0.561</text>
+	<rect class="bit0On" x="260" y="226" width="224.2" height="34"/>
+	<rect class="off" x="484.2" y="226" width="175.8" height="34"/>
+	<text class="part on" x="372.1" y="247" text-anchor="middle">0: 56.1%</text>
+	<text class="part note" x="572.1" y="247" text-anchor="middle">1: 43.9%</text>
+	<text class="step" x="680" y="240">bit 0</text>
+	<text class="val mono" x="680" y="256">0.835 bits</text>
+
+	<!-- row 4: p = 0.588, bit 0 -->
+	<text class="step" x="30" y="308">decision 4</text>
+	<text class="val mono" x="30" y="324">p(0) 0.588</text>
+	<rect class="bit0On" x="260" y="294" width="235.2" height="34"/>
+	<rect class="off" x="495.2" y="294" width="164.8" height="34"/>
+	<text class="part on" x="377.6" y="315" text-anchor="middle">0: 58.8%</text>
+	<text class="part note" x="577.6" y="315" text-anchor="middle">1: 41.2%</text>
+	<text class="step" x="680" y="308">bit 0</text>
+	<text class="val mono" x="680" y="324">0.766 bits</text>
+
+	<!-- row 5: p = 0.614, bit 1 -->
+	<text class="step" x="30" y="376">decision 5</text>
+	<text class="val mono" x="30" y="392">p(0) 0.614</text>
+	<rect class="off" x="260" y="362" width="245.5" height="34"/>
+	<rect class="bit1On" x="505.5" y="362" width="154.5" height="34"/>
+	<text class="part note" x="382.8" y="383" text-anchor="middle">0: 61.4%</text>
+	<text class="part on" x="582.8" y="383" text-anchor="middle">1: 38.6%</text>
+	<text class="step" x="680" y="376">bit 1</text>
+	<text class="val mono" x="680" y="392">1.372 bits</text>
+
+	<!-- result row: final interval, with 0.0625 marked -->
+	<text class="step" x="30" y="444">result</text>
+	<text class="val mono" x="30" y="460">[0.0537, 0.0876)</text>
+	<rect class="off" x="260" y="430" width="400" height="34"/>
+	<line class="marker" x1="364" y1="430" x2="364" y2="470"/>
+	<text class="part" x="364" y="486" text-anchor="middle">0.0625</text>
+	<text class="step" x="680" y="444">total</text>
+	<text class="val mono" x="680" y="460">4.89 bits</text>
+
+	<!-- explanation of how p moves -->
+	<rect class="panel" x="30" y="500" width="760" height="96" rx="8"/>
+	<text class="note" x="48" y="522">After each decision, p, the chance of a 0, moves a sixteenth of the way towards the answer that was seen:</text>
+	<text class="mono" x="48" y="545" style="font-size: 12.5px;">after a 0: p &#8592; p + (1 &#8722; p) / 16</text>
+	<text class="mono" x="400" y="545" style="font-size: 12.5px;">after a 1: p &#8592; p &#8722; p / 16</text>
+	<text class="note" x="48" y="566">The decoder makes the same moves, so it splits the interval the same way at every step.</text>
+	<text class="note" x="48" y="584">The number 0.0625 (binary 0.0001) lies in the final interval, and it decodes to all five decisions.</text>
+</svg>

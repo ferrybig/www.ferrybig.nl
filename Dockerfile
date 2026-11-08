@@ -22,6 +22,16 @@ COPY /app /app/app
 COPY --from=timestamps /app/timestamps.txt /app/timestamps.txt
 RUN cd /app/md-compiler && ls -l /app/timestamps.txt && npm run compiler-run
 
+FROM node-base AS geodata-range-coder-deps
+COPY /simulations/geodata-range-coder/package.json /simulations/geodata-range-coder/package-lock.json /app/
+RUN cd /app && npm ci --ignore-scripts
+
+FROM geodata-range-coder-deps AS geodata-range-coder
+COPY /simulations/geodata-range-coder/build.mjs /simulations/geodata-range-coder/tsconfig.json /app/
+COPY /simulations/geodata-range-coder/src /app/src
+COPY /simulations/geodata-range-coder/test /app/test
+RUN cd /app && npm run tsc && npm test && npm run build
+
 FROM node-base AS deps
 COPY /package.json /package-lock.json /app/
 RUN cd /app && npm ci --ignore-scripts
@@ -33,6 +43,7 @@ COPY /assets /app/assets
 COPY /md-compiler /app/md-compiler
 COPY next.config.mjs postcss.config.cjs postcssLightDarkPolyfill.cjs tsconfig.json eslint.config.mjs package.json /app/
 COPY --from=md-compiler /app/app /app/app
+COPY --from=geodata-range-coder /app/dist/geodata-range-coder.js /app/simulations/geodata-range-coder/dist/geodata-range-coder.js
 
 FROM build-env AS build
 RUN cd /app && npx next typegen
@@ -91,7 +102,7 @@ COPY <<Caddyfile /etc/caddy/Caddyfile
 		precompressed br
 	}
 	try_files {path}.html
-	header Content-Security-Policy "default-src 'self' analytics.ferrybig.nl;script-src 'self' 'unsafe-eval' 'unsafe-inline';style-src 'self' 'unsafe-inline';img-src 'self' blob: data:;font-src 'self';object-src 'none';base-uri 'self';frame-src 'self' projects.ferrybig.nl giscus.app;form-action 'self';frame-ancestors 'none';block-all-mixed-content;"
+	header Content-Security-Policy "default-src 'self' analytics.ferrybig.nl;script-src 'self' 'unsafe-eval' 'unsafe-inline';style-src 'self' 'unsafe-inline';img-src 'self' blob: data: https://tile.openstreetmap.org;font-src 'self';object-src 'none';base-uri 'self';frame-src 'self' projects.ferrybig.nl giscus.app;form-action 'self';frame-ancestors 'none';block-all-mixed-content;"
 	header /giscus.css access-control-allow-origin https://giscus.app
 	header /_next/static/* Cache-Control max-age=31536000
 	handle_errors {
