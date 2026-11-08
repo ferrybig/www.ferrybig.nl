@@ -11,7 +11,7 @@ coAuthors:
 ---
 # Beating zlib: the cities of the world in 19.5 MiB
 
-In [my first post about this file format](/tech/compressing-the-world-into-megabytes) I squeezed every country, region and city boundary on Earth into a 45 MiB file ([two of the fixes along the way have their own post](/tech/geodata-72-to-45-mib)), and I ended up there with zlib doing the last step. I didn't think there would be something better than this for a while. Then I had an idea and now we are here, a ~57% reduction in filesize...
+In [my first post about this file format](/tech/compressing-the-world-into-megabytes) I squeezed every country, region and city boundary on Earth into a 72 MiB file. The two fixes that took it to 45 MiB have [their own post](/tech/geodata-72-to-45-mib), and I ended up there with zlib doing the last step. I didn't think there would be something better than this for a while. Then I had an idea, and this is the result: a ~57% reduction in file size. The same format also covers a super-res build of the world, 524,288 × 524,288 cells (275 billion), in 74 MiB. That is sixteen times the cells of the 72 MiB file from the first post, in about the same space. The 19.5 MiB file below is the high-res build, at 131,072 cells across.
 
 ## Where version 1 left off
 
@@ -22,13 +22,13 @@ Quick recap: A CGEODATA file is a list of chunks, and every chunk is a [quadtree
 | **depths** | 1 | 3 | 3 | 3 | 3 | 2 | 2 | 2 | 1 | 3 | 3 | 3 | 3 | 2 | 2 | 2 |
 | **palette indices** | 1 | 1 | 2 | 1 | 2 | 2 | 1 | 2 | 1 | 1 | 2 | 1 | 2 | 2 | 2 | 2 |
 
-The numbers on top are the Morton codes of the records. In version 1 we dropped them already: the depths and the palette indices of a chunk were written one array after the other, and deflated as one block. Before them comes the palette, a list of place ids stored as delta-coded varints, where small delta's are much more common than large ones.
+The numbers on top are the Morton codes of the records. In version 1 we dropped them already: the depths and the palette indices of a chunk were written one array after the other, and deflated as one block. Before them comes the palette, a list of place ids stored as delta-coded varints, where small deltas are much more common than large ones.
 
 ## Can we beat zlib with our own compression?
 
-Zlib is a general purpose compressor. The start of every chunk is mostly "random", with varint (lower numbers are more likely because of ). It has no idea that after the "random" data comes structured data. This already gives a bit of overhead. I worked together With Claude Opus, Sonnet & Haiku for experimenting with different ideas I had.
+Zlib is a general purpose compressor. The start of every chunk is mostly varints, where lower numbers are more likely since cities in regions are located close together. To zlib these look like "random" bytes, and it has no idea that structured data follows them. I worked together with Claude Opus, Sonnet and Haiku on experiments with different ideas I had.
 
-The result of this is [CGEODATA version 2](https://github.com/ferrybig/loc-to-city/pull/9). The records are exactly the same records as in version 1, but this time we only need 1.34 bits to store 110,148,645 records instead of the 3.31 bits from before. 3 changes made this possible:
+The result of this is [CGEODATA version 2](https://github.com/ferrybig/loc-to-city/pull/9). The records are exactly the same records as in version 1, but this time we only need 1.34 bits to store 110,148,645 records instead of the 3.31 bits from before. Three changes made this possible:
 
 ### Step 1: Don't store depths, store the quadtree
 
@@ -50,7 +50,7 @@ The depths array is a pre-order listing of a quadtree, and a quadtree can be wri
 | - - - - north-west | leaf  | 0             | record 56              |
 | - - - - north-east | leaf  | 0             | record 60              |
 
-That is 13 *bits* for what used to be 128 bits (16 bytes) of depths. A cell at the maximum depth can not split, so it does not even get a question. Even for a small example file this is already a reduction of 9.8x!.
+That is 13 *bits* for what used to be 128 bits (16 bytes) of depths. A cell at the maximum depth cannot split, so it does not even get a question. Even for this small example, that is already a reduction of 9.8×.
 
 Those 13 bits are still not stored as 13 bits. Each question is asked with some knowledge of what was already decoded: the depth of the node, and whether the records to the west and south of it are deeper than it. If your neighbours had to split to follow a border, there is a good chance you have to as well. If your neighbours are big cells, you are probably in the middle of a city and you are probably a big cell too.
 
@@ -62,7 +62,7 @@ This is the part I did not see coming. In my head, I was thinking of run length 
 
 So every leaf asks, in order:
 
-1. Is it the same place as my west neighbour? In the world file, this is yes for 74% (!) of the records.
+1. Is it the same place as my west neighbour? In the world file, this is yes for 74% of the records.
 2. If not: is it the same place as my south neighbour? Yes for another 19%.
 3. If not: which one is it? (the remainder 7% of the cases) This is coded as a position in a [move-to-front list](https://en.wikipedia.org/wiki/Move-to-front_transform) of palette indices, where the most recently used index is at the front. The west and south answers are skipped in that list, since we already know it is neither of them. The position is written in [Elias gamma](https://en.wikipedia.org/wiki/Elias_gamma_coding), so small numbers are short.
 
@@ -83,7 +83,7 @@ The probabilities are not stored anywhere. Every one starts at 50% and moves a s
 
 ![Five decisions narrowing the interval from \[0, 1\) down to a small range, with the probability of each answer rising as it is seen](range-coding.svg "Narrowing an interval, one decision at a time")
 
-Why not Huffman? A Huffman code spends at least one whole bit for every symbol it writes. Huffman coding the depths and the palette indices separately costs at least two bits per record, already more than the 1.34 bits version 2 spends on both. The following experiments performed by Claude indicated this method resulted in the largest compression.
+Why not Huffman? A Huffman code spends at least one whole bit for every symbol it writes. Huffman coding the depths and the palette indices separately costs at least two bits per record, already more than the 1.34 bits version 2 spends on both. Claude's experiments showed that range coding gave the largest compression.
 
 | Variant                                       | Size                   |
 | --------------------------------------------- | ---------------------- |
@@ -108,7 +108,7 @@ The cost follows directly from the size of the part kept. At 99.6% (`p = 4081`),
 
 #### Watch it work
 
-Reading about it only goes so far, so here is the small demo to play demonstrate how it works. Notice how it goes from the records to the small lookup table, then into the range coder. The range coder doesn't help a lot here, but with a larger dataset it learns more as it goes on for longer. (See the example at the end of the blog)
+Reading about it only goes so far, so here is a small demo that shows how it works. Notice how it goes from the records to the small lookup table, then into the range coder. The range coder doesn't help a lot here, but with a larger dataset it learns more as it goes on for longer. (See the real chunk at the end of this post.)
 
 <geodata-range-coder mode="encode" example="blog">
 
@@ -130,7 +130,7 @@ The example is tiny, so it costs 4.5 bits per record instead of the 1.34 of the 
 
 ## The price: decode speed
 
-I predicted bits would be slower, and it indeed was. Where before things could processed in parallel, now every decision depends on the one before it, so there is nothing to vectorize, and it takes about 2.5 decisions per record. zlib's inflate on the other hand is native code that has been optimized for decades.
+I predicted bits would be slower, and it indeed was. Where before things could be processed in parallel, now every decision depends on the one before it, so there is nothing to vectorise, and it takes about 2.5 decisions per record. zlib's inflate on the other hand is native code that has been optimised for decades.
 
 | Operation                       | v1          | v2                                            |
 | ------------------------------- | ----------- | --------------------------------------------- |
@@ -144,7 +144,7 @@ The hope of winning speed back by dropping zlib only came true on the encoding s
 
 Remember the [WebAssembly decoder I removed as part of the version 1 upgrade?](/tech/geodata-72-to-45-mib#do-we-actually-need-to-store-the-morton-codes) For version 2 I decided to bring it back, because here it is 2.4 times as fast as the JavaScript decoder. It follows the same rules as the version 0 decoder: it can only accept or decline a chunk, never report an error, and the JavaScript decoder stays the reference. A test feeds both 8,000 corrupted streams and checks that WebAssembly never accepts one that JavaScript rejects.
 
-The slowdown matters less as querying is human paced. If someone prefers a fast lookup speed over disk space, they need to use a different much larger format that allows binary search.
+The slowdown matters less as querying is human paced. If someone prefers a fast lookup speed over disk space, they should a non compressed representation of the current format. Defining a file format for this is a future task
 
 ## How close is the actual implementation to my original idea?
 
@@ -156,8 +156,8 @@ The slowdown matters less as querying is human paced. If someone prefers a fast 
 | Store depths in fewer bits than a byte | Depths are not stored at all, only one yes/no split flag per node | Further than my idea |
 | Do it for both the depths and the palette indices | Both | Yes |
 | The palette itself (the list of place ids) | Unchanged, still delta-coded varints | Not touched |
-| Bits instead of bytes will be slower | About 4 times slower to decode | Correct |
-| Maybe faster because there is no zlib | Encoding got around 1.2 times as slow | Incorrect |
+| Bits instead of bytes will be slower | About 4 times slower to decode with WebAssembly, about 10 times with plain JavaScript | Correct |
+| Maybe faster because there is no zlib | Encoding is about 9 times faster, decoding is slower | Half right |
 
 ## Watch it decoding a real chunk
 

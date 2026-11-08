@@ -35,7 +35,7 @@
 	<text class="ttl" x="0" y="14">How one chunk gets small</text>
 
 	<!-- ===================== left: the quadtree ===================== -->
-	<text class="sub" x="0" y="38">16 leaf cells, at three different sizes</text>
+	<text class="sub" x="0" y="38">22 leaf cells, at three different sizes</text>
 
 	<!-- two depth-1 cells, west -->
 	<rect class="cellA" x="0" y="48"  width="128" height="128"/>
@@ -43,15 +43,19 @@
 	<text class="mono code" x="64" y="115" text-anchor="middle">32</text>
 	<text class="mono code" x="64" y="243" text-anchor="middle">0</text>
 
-	<!-- middle columns: merged depth-2 blocks where all four children agreed -->
-	<rect class="cellB" x="128" y="48"  width="64" height="64"/><text class="mono code" x="160" y="84"  text-anchor="middle">56</text>
-	<rect class="cellA" x="128" y="176" width="64" height="64"/><text class="mono code" x="160" y="212" text-anchor="middle">24</text>
-
 	<!-- middle columns: depth-3 cells the boundary actually separates -->
+	<rect class="cellB" x="128" y="48" width="32" height="32"/><text class="mono code" x="144" y="68" text-anchor="middle">58</text>
+	<rect class="cellB" x="160" y="48" width="32" height="32"/><text class="mono code" x="176" y="68" text-anchor="middle">59</text>
+	<rect class="cellB" x="128" y="80" width="32" height="32"/><text class="mono code" x="144" y="100" text-anchor="middle">56</text>
+	<rect class="cellB" x="160" y="80" width="32" height="32"/><text class="mono code" x="176" y="100" text-anchor="middle">57</text>
 	<rect class="cellA" x="128" y="112" width="32" height="32"/><text class="mono code" x="144" y="131" text-anchor="middle">50</text>
 	<rect class="cellB" x="160" y="112" width="32" height="32"/><text class="mono code" x="176" y="131" text-anchor="middle">51</text>
 	<rect class="cellA" x="128" y="144" width="32" height="32"/><text class="mono code" x="144" y="163" text-anchor="middle">48</text>
 	<rect class="cellB" x="160" y="144" width="32" height="32"/><text class="mono code" x="176" y="163" text-anchor="middle">49</text>
+	<rect class="cellA" x="128" y="176" width="32" height="32"/><text class="mono code" x="144" y="196" text-anchor="middle">26</text>
+	<rect class="cellA" x="160" y="176" width="32" height="32"/><text class="mono code" x="176" y="196" text-anchor="middle">27</text>
+	<rect class="cellA" x="128" y="208" width="32" height="32"/><text class="mono code" x="144" y="228" text-anchor="middle">24</text>
+	<rect class="cellA" x="160" y="208" width="32" height="32"/><text class="mono code" x="176" y="228" text-anchor="middle">25</text>
 	<rect class="cellA" x="128" y="240" width="32" height="32"/><text class="mono code" x="144" y="259" text-anchor="middle">18</text>
 	<rect class="cellB" x="160" y="240" width="32" height="32"/><text class="mono code" x="176" y="259" text-anchor="middle">19</text>
 	<rect class="cellA" x="128" y="272" width="32" height="32"/><text class="mono code" x="144" y="291" text-anchor="middle">16</text>
