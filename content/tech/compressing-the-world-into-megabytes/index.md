@@ -104,9 +104,9 @@ Let me do the arithmetic that makes this sound impossible first.
 
 The worldwide file uses a 128 × 128 grid of chunks and a quadtree depth of 10, which works out to 131,072 × 131,072 cells across the planet. That is **17,179,869,184** cells, each about 306 m wide and 152 m tall at the equator. There are 274,171 distinct places, so a place id needs 19 bits. If we stored one id per cell we would need
 
-```
-17,179,869,184 cells × 19 bits = about 38 GiB
-```
+$$
+17{,}179{,}869{,}184 \times 19 \text{ bits} \approx 38 \text{ GiB}
+$$
 
 Nobody would ship that. It is just the upper bound the grid starts from, before any of the structure below is applied. The actual file is 75,935,694 bytes, so **537 times smaller** than the dense grid, and 72 times smaller than the 5.1 GiB of polygons it was built from.
 
