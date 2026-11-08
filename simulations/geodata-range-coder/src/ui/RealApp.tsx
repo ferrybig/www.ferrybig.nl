@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { percent } from "../codec/describe.ts";
 import {
 	decodeLite,
-	nextRecordEnd,
-	previousRecordEnd,
-	Probabilities,
-	recordsDoneAt,
-	slotName,
-	SLOTS,
 	type LiteTrace,
+	nextRecordEnd,
+	Probabilities,
+	previousRecordEnd,
+	recordsDoneAt,
+	SLOTS,
+	slotName,
 } from "../codec/lite.ts";
 import { REAL_CHUNK } from "../real/chunk.ts";
 import { placeColour, RealMap } from "./RealMap.tsx";
@@ -36,7 +36,10 @@ const number = (n: number) => n.toLocaleString("en");
 export function RealApp() {
 	const [trace, setTrace] = useState<LiteTrace | null>(null);
 	useEffect(() => {
-		const id = setTimeout(() => setTrace(decodeLite(REAL_CHUNK.header, REAL_CHUNK.stream)), 0);
+		const id = setTimeout(
+			() => setTrace(decodeLite(REAL_CHUNK.header, REAL_CHUNK.stream)),
+			0,
+		);
 		return () => clearTimeout(id);
 	}, []);
 	if (!trace) {
@@ -83,7 +86,10 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 		let last = performance.now();
 		let frame = 0;
 		const tick = (now: number) => {
-			at = Math.min(total, at + ((now - last) / 1000) * SPEEDS[speed]!.perSecond);
+			at = Math.min(
+				total,
+				at + ((now - last) / 1000) * SPEEDS[speed]!.perSecond,
+			);
 			last = now;
 			go(Math.floor(at));
 			if (at >= total) setPlaying(false);
@@ -97,8 +103,10 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 		const target = e.target as HTMLElement;
 		if (target.tagName === "SELECT" || target.tagName === "INPUT") return;
 		const now = kRef.current;
-		if (e.key === "ArrowRight") jump(e.shiftKey ? nextRecordEnd(trace, now) : now + 1);
-		else if (e.key === "ArrowLeft") jump(e.shiftKey ? previousRecordEnd(trace, now) : now - 1);
+		if (e.key === "ArrowRight")
+			jump(e.shiftKey ? nextRecordEnd(trace, now) : now + 1);
+		else if (e.key === "ArrowLeft")
+			jump(e.shiftKey ? previousRecordEnd(trace, now) : now - 1);
 		else if (e.key === " " && target.tagName !== "BUTTON") togglePlay();
 		else if (e.key === "Home") reset();
 		else return;
@@ -113,10 +121,14 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 	const legend = useMemo(() => {
 		const area = new Float64Array(REAL_CHUNK.header.paletteCount + 1);
 		for (let r = 0; r < records; r++) {
-			area[trace.recIndex[r]!]! += 4 ** (trace.header.maxDepth - trace.recDepth[r]!);
+			area[trace.recIndex[r]!]! +=
+				4 ** (trace.header.maxDepth - trace.recDepth[r]!);
 		}
 		const order = Array.from(area.keys()).sort((a, b) => area[b]! - area[a]!);
-		return { top: order.slice(0, LEGEND), more: order.filter((i) => area[i]! > 0).length - LEGEND };
+		return {
+			top: order.slice(0, LEGEND),
+			more: order.filter((i) => area[i]! > 0).length - LEGEND,
+		};
 	}, [trace, records]);
 
 	const probabilities = useMemo(() => new Probabilities(trace), [trace]);
@@ -126,7 +138,12 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 	const row = (slot: number, current: boolean) => (
 		<li key={slot} class={current ? "current" : ""}>
 			<code>{slotName(slot)}</code>
-			<meter min={0} max={4096} value={probabilities.p[slot]!} aria-label={`chance of a 0: ${percent(probabilities.p[slot]!)}`} />
+			<meter
+				min={0}
+				max={4096}
+				value={probabilities.p[slot]!}
+				aria-label={`chance of a 0: ${percent(probabilities.p[slot]!)}`}
+			/>
 			<span>{percent(probabilities.p[slot]!)}</span>
 			<small>×{number(probabilities.seen[slot]!)}</small>
 		</li>
@@ -140,22 +157,52 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 			aria-label="Decoding a real chunk. Left and right arrows step, shift moves by record, space plays."
 		>
 			<div class="controls" role="toolbar" aria-label="Playback">
-				<button onClick={reset} title="Reset (Home)" aria-label="Reset" disabled={k === 0 && !playing}>
+				<button
+					onClick={reset}
+					title="Reset (Home)"
+					aria-label="Reset"
+					disabled={k === 0 && !playing}
+				>
 					⟲
 				</button>
-				<button onClick={() => jump(previousRecordEnd(trace, k))} title="Previous record (Shift+←)" aria-label="Previous record" disabled={k === 0}>
+				<button
+					onClick={() => jump(previousRecordEnd(trace, k))}
+					title="Previous record (Shift+←)"
+					aria-label="Previous record"
+					disabled={k === 0}
+				>
 					⏮
 				</button>
-				<button onClick={() => jump(k - 1)} title="Previous step (←)" aria-label="Previous step" disabled={k === 0}>
+				<button
+					onClick={() => jump(k - 1)}
+					title="Previous step (←)"
+					aria-label="Previous step"
+					disabled={k === 0}
+				>
 					◀
 				</button>
-				<button class="play" onClick={togglePlay} title="Play or pause (Space)" aria-label={playing ? "Pause" : "Play"}>
+				<button
+					class="play"
+					onClick={togglePlay}
+					title="Play or pause (Space)"
+					aria-label={playing ? "Pause" : "Play"}
+				>
 					{playing ? "⏸" : "▶"}
 				</button>
-				<button onClick={() => jump(k + 1)} title="Next step (→)" aria-label="Next step" disabled={finished}>
+				<button
+					onClick={() => jump(k + 1)}
+					title="Next step (→)"
+					aria-label="Next step"
+					disabled={finished}
+				>
 					▶|
 				</button>
-				<button onClick={() => jump(nextRecordEnd(trace, k))} title="Next record (Shift+→)" aria-label="Next record" disabled={finished}>
+				<button
+					onClick={() => jump(nextRecordEnd(trace, k))}
+					title="Next record (Shift+→)"
+					aria-label="Next record"
+					disabled={finished}
+				>
 					⏭
 				</button>
 				<input
@@ -168,7 +215,12 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 				/>
 				<label class="speed">
 					<span class="sr">Speed</span>
-					<select value={speed} onChange={(e) => setSpeed(Number((e.target as HTMLSelectElement).value))}>
+					<select
+						value={speed}
+						onChange={(e) =>
+							setSpeed(Number((e.target as HTMLSelectElement).value))
+						}
+					>
 						{SPEEDS.map((s, i) => (
 							<option key={s.label} value={i}>
 								{s.label} ({number(s.perSecond)}/s)
@@ -194,11 +246,23 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					<h3>
 						<span class="num">1</span> The records
 					</h3>
-					<RealMap trace={trace} done={done} k={k} boundingBox={REAL_CHUNK.boundingBox} streetMap={streetMap} />
+					<RealMap
+						trace={trace}
+						done={done}
+						k={k}
+						boundingBox={REAL_CHUNK.boundingBox}
+						streetMap={streetMap}
+					/>
 					<ul class="legend">
 						{legend.top.map((index) => (
 							<li key={index}>
-								<span class="swatch" style={{ background: placeColour(index), borderColor: placeColour(index) }} />
+								<span
+									class="swatch"
+									style={{
+										background: placeColour(index),
+										borderColor: placeColour(index),
+									}}
+								/>
 								{places[index]}
 							</li>
 						))}
@@ -208,12 +272,25 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 						</li>
 					</ul>
 					<label class="map-toggle">
-						<input type="checkbox" checked={streetMap} onChange={(e) => setStreetMap((e.target as HTMLInputElement).checked)} /> show the map
-						behind it
+						<input
+							type="checkbox"
+							checked={streetMap}
+							onChange={(e) =>
+								setStreetMap((e.target as HTMLInputElement).checked)
+							}
+						/>{" "}
+						show the map behind it
 					</label>
-					<p class="hint attribution" style={{ visibility: streetMap ? "visible" : "hidden" }}>
+					<p
+						class="hint attribution"
+						style={{ visibility: streetMap ? "visible" : "hidden" }}
+					>
 						Map: ©{" "}
-						<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer noopener">
+						<a
+							href="https://www.openstreetmap.org/copyright"
+							target="_blank"
+							rel="noreferrer noopener"
+						>
 							OpenStreetMap contributors
 						</a>
 					</p>
@@ -228,13 +305,14 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 
 					<h4>What the probabilities have learned</h4>
 					<p class="hint tally">
-						{probabilities.used} of {number(SLOTS)} in use, the busiest {LISTED} listed
+						{probabilities.used} of {number(SLOTS)} in use, the busiest {LISTED}{" "}
+						listed
 					</p>
 					<ul class="probs">
 						{busiest.map((slot) => row(slot, slot === now))}
 						{Array.from({ length: LISTED - busiest.length }, (_, i) => (
 							<li key={`blank${i}`} class="keep-space">
-								<code>—</code>
+								<code>,</code>
 							</li>
 						))}
 					</ul>
