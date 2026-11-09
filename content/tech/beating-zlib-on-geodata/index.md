@@ -1,13 +1,18 @@
 ---
 date: "2026-11-05"
 tags: ["tech", "geo", "compression", "binary-format", "typescript"]
-coAuthors:
+authors:
+    - name: Fernando
+      url: https://www.ferrybig.nl/
     - name: Claude Opus 5.5
       url: https://claude.com/claude-code
+      role: "Code by"
     - name: Claude Sonnet 5.5
       url: https://claude.com/claude-code
+      role: "Drafted & simulations by"
     - name: Claude Haiku 5.5
       url: https://claude.com/claude-code
+      role: "Reviewed by"
 ---
 # Beating zlib: the cities of the world in 19.5 MiB
 

@@ -44,23 +44,23 @@ tags: ["tech", "linux", "sleep", "systemd"]
 
 Known fields (`md-compiler/typesExport.ts: MetaData`):
 
-| Field                 | Type                              | Notes |
-|------------------------|------------------------------------|-------|
-| `date`                | string (`YYYY-MM-DD`)              | Publish date. |
-| `tags`                | `string[]`                         | Also doubles as a flat/array YAML list. Each tag gets its own listing + feed page. |
-| `icon`                | string (filename)                  | Used on category/topic index pages, points at an SVG next to the `index.md`. |
-| `color`               | string                             | Optional accent color. |
-| `topicIndex`          | number                             | Manual ordering for category/topic index pages. |
-| `childrenLayout`      | `"card" \| "list"`                 | Set on a **category** `index.md` (e.g. `content/tech/index.md`) to control how child posts are listed. |
-| `deprecated`          | boolean                            | Flags a post as outdated (e.g. `react-bare-bones-setup`). |
-| `commentStatus`       | `"open" \| "closed" \| "disabled"` | Controls Giscus comments. |
-| `excludeFromAll`      | boolean                            | Hide from the all-posts listing (used on `content/nsfw/index.md`). |
-| `excludeFromChildren` | boolean                            | Hide from its parent's children listing. |
-| `children`            | `"auto" \| "root" \| "content"`    | How child pages are gathered. |
-| `linkTitle`           | string                             | Override the title used in nav/links (e.g. `linkTitle: Home`). |
-| `summary`             | string                             | Optional explicit summary/description. |
-| `coAuthors`           | array of string or `{name, url}`   | Anyone besides me who worked on the post, shown in the "Article information" box and in the page's `author` metadata. Used for AI disclosure. See below. |
-| `thumbnail`           | object or shorthand string         | See below. |
+| Field                  | Type                                   | Notes                                                                                                                                                    |
+|------------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `date`                 | string (`YYYY-MM-DD`)                  | Publish date.                                                                                                                                            |
+| `tags`                 | `string[]`                             | Also doubles as a flat/array YAML list. Each tag gets its own listing + feed page.                                                                       |
+| `icon`                 | string (filename)                      | Used on category/topic index pages, points at an SVG next to the `index.md`.                                                                             |
+| `color`                | string                                 | Optional accent color.                                                                                                                                   |
+| `topicIndex`           | number                                 | Manual ordering for category/topic index pages.                                                                                                          |
+| `childrenLayout`       | `"card" \| "list"`                     | Set on a **category** `index.md` (e.g. `content/tech/index.md`) to control how child posts are listed.                                                   |
+| `deprecated`           | boolean                                | Flags a post as outdated (e.g. `react-bare-bones-setup`).                                                                                                |
+| `commentStatus`        | `"open" \| "closed" \| "disabled"`     | Controls Giscus comments.                                                                                                                                |
+| `excludeFromAll`       | boolean                                | Hide from the all-posts listing (used on `content/nsfw/index.md`).                                                                                       |
+| `excludeFromChildren`  | boolean                                | Hide from its parent's children listing.                                                                                                                 |
+| `children`             | `"auto" \| "root" \| "content"`        | How child pages are gathered.                                                                                                                            |
+| `linkTitle`            | string                                 | Override the title used in nav/links (e.g. `linkTitle: Home`).                                                                                           |
+| `summary`              | string                                 | Optional explicit summary/description.                                                                                                                   |
+| `authors`              | array of string or `{name, url, role}` | Anyone besides me who worked on the post, shown in the "Article information" box and in the page's `author` metadata. Used for AI disclosure. See below. |
+| `thumbnail`            | object or shorthand string             | See below.                                                                                                                                               |
 
 `thumbnail` can be a bare relative path:
 
@@ -76,19 +76,20 @@ thumbnail:
     link: https://github.com/ferrybig/breakout/
 ```
 
-(fields available: `image`, `alt`, `link`, `width`, `height`, `embed`.)
+(fields available: `image`, `alt`, `caption`, `link`, `width`, `height`, `embed`.)
 
-`coAuthors` takes a list of names, each either a bare string or an object
-with a `url`:
+`authors` takes a list of names, each either a bare string or an object
+with a `url` and `role`:
 
 ```yaml
-coAuthors:
+authors:
     - name: Claude Opus 5
       url: https://claude.com/claude-code
+      role: Reviewed by
     - Someone without a link
 ```
 
-Posts with no `coAuthors` are unchanged: the line is left out of the
+Posts with no `authors` are unchanged: the line is left out of the
 article information box entirely, rather than rendering an empty list.
 
 ## Markdown body features
@@ -124,12 +125,15 @@ asset-rewriting pass. Practically, that means:
   imports by `rehypeMdxAssets`, so images get processed/optimized by Next's
   asset pipeline instead of being served as static strings. Just write normal
   Markdown image/link syntax with a relative path:
+
   ```md
   ![An photo of a standard television test screen](test.jpg "An HD television test screen")
   ```
+
   Local links to downloadable files automatically get a `download` attribute.
 - **`html eval` code blocks** render a *live preview* of the HTML, in addition
   to the highlighted source. Written as:
+
   ````md
   ```html eval
   <details>
@@ -138,6 +142,7 @@ asset-rewriting pass. Practically, that means:
   </details>
   ```
   ````
+
   The `remarkMdxEvalCodeBlock` plugin detects the `eval` meta flag and injects
   an `<HtmlPreview html="...">` component right after the code block. That
   component (`app/_components/HtmlPreview.tsx`) is a client component that
@@ -150,6 +155,8 @@ asset-rewriting pass. Practically, that means:
   Not currently used in any shipped post, but supported.
 - **Accessible emoji handling** (`rehype-accessible-emojis`): plain emoji
   characters typed in text get appropriate screen-reader labels automatically.
+- **Avoid em, en and smarty quotes**: Texts should be a simple markup. This is
+  a blog by a programmer, not a type writing person
 
 ## Build/output pipeline (for context, not authoring)
 

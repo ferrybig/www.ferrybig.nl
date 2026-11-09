@@ -9,7 +9,7 @@ expansion of that number with big-integer arithmetic (no rounding) and
 renders it as an SVG thumbnail, pi-poster style, fading out at the bottom.
 
 Usage:
-    python3 chunk-to-svg.py chunk-207623-xxd.txt thumbnail.svg
+    python3 chunk-to-svg.py chunk-207623.bin thumbnail.svg
 
 The input is detected by extension: ".txt" is `xxd -p` hex dump text,
 anything else is read as raw chunk bytes.
@@ -18,7 +18,7 @@ anything else is read as raw chunk bytes.
 import sys
 
 # ---- tweak me ----
-WIDTH, HEIGHT = 600, 400
+WIDTH, HEIGHT = 640, 180
 MARGIN = 16
 FONT_SIZE = 11.5            # monospace font size
 LINE_HEIGHT = 13.2

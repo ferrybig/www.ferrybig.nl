@@ -1,15 +1,19 @@
 ---
 date: "2026-10-21"
 tags: ["tech", "geo", "compression", "binary-format", "openstreetmap", "typescript"]
-coAuthors:
+authors:
+    - name: Fernando
+      url: https://www.ferrybig.nl/
     - name: Claude Opus 5.5
       url: https://claude.com/claude-code
+      role: "Code by"
     - name: Claude Sonnet 5.5
       url: https://claude.com/claude-code
+      role: "Drafted & simulations by"
 thumbnail:
     image: ./the-netherlands.png
     link: https://geodata.ferrybig.nl/
-    alt: Netherlands as mapped by this tool
+    alt: The Netherlands as mapped by this tool
 ---
 # Compressing the cities of the world into a mere 72 MiB
 

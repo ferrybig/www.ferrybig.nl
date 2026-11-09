@@ -5,7 +5,7 @@ thumbnail:
     image: thumbnail.png
     embed: https://projects.ferrybig.nl/breakout-modules/
     link: https://github.com/ferrybig/breakout-modules/
-    alt: The resulting breakout game
+    caption: The resulting breakout game
 ---
 # Creating a breakout game again
 

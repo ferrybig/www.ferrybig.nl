@@ -1,11 +1,15 @@
 ---
 date: "2026-10-30"
 tags: ["tech", "geo", "compression", "binary-format", "typescript"]
-coAuthors:
+authors:
+    - name: Fernando
+      url: https://www.ferrybig.nl/
     - name: Claude Opus 5.5
       url: https://claude.com/claude-code
+      role: "Code by"
     - name: Claude Sonnet 5.5
       url: https://claude.com/claude-code
+      role: "Drafted by"
 ---
 # Two fixes that took the geodata file from 72 MiB to 45 MiB
 

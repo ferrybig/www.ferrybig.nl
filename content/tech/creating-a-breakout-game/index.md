@@ -4,7 +4,7 @@ tags: ["typescript", "from-scratch"]
 thumbnail:
     image: thumbnail.png
     link: https://github.com/ferrybig/breakout/
-    alt: The resulting breakout game
+    caption: The resulting breakout game
 ---
 # Creating a breakout game
 

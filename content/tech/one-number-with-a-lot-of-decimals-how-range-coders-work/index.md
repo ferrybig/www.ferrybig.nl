@@ -1,15 +1,19 @@
 ---
 date: "2026-11-08"
 tags: ["tech", "geo", "compression", "binary-format"]
-coAuthors:
+authors:
+    - name: Fernando
+      url: https://www.ferrybig.nl/
     - name: Vibe GLM 5.3
       url: https://chat.mistral.ai/
+      role: "Drafted by"
     - name: Claude Haiku 5.5
       url: https://claude.com/claude-code
+      role: "Reviewed by"
 thumbnail:
     image: ./chunk.svg
-    link: https://geodata.ferrybig.nl/
-    alt: 2,212 out of the 47,696 decimals in chunk 207623
+    link: ./chunk.svg
+    alt: The number stored in chunk 207623
 ---
 
 # One number with a lot of decimals: how range coders work
