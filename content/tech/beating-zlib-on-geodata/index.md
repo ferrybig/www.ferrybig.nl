@@ -6,13 +6,13 @@ authors:
       url: https://www.ferrybig.nl/
     - name: Claude Opus 5.5
       url: https://claude.com/claude-code
-      role: "Code by"
+      role: "work on project"
     - name: Claude Sonnet 5.5
       url: https://claude.com/claude-code
-      role: "Drafted & simulations by"
+      role: "draft & simulations"
     - name: Claude Haiku 5.5
       url: https://claude.com/claude-code
-      role: "Reviewed by"
+      role: "reviewer"
 ---
 # Beating zlib: the cities of the world in 19.5 MiB
 

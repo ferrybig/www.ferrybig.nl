@@ -6,10 +6,10 @@ authors:
       url: https://www.ferrybig.nl/
     - name: Claude Opus 5.5
       url: https://claude.com/claude-code
-      role: "Code by"
+      role: "work on project"
     - name: Claude Sonnet 5.5
       url: https://claude.com/claude-code
-      role: "Drafted & simulations by"
+      role: "draft & simulations"
 thumbnail:
     image: ./the-netherlands.png
     link: https://geodata.ferrybig.nl/

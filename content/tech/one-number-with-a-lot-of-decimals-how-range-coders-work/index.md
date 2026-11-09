@@ -6,13 +6,12 @@ authors:
       url: https://www.ferrybig.nl/
     - name: Vibe GLM 5.3
       url: https://chat.mistral.ai/
-      role: "Drafted by"
+      role: "draft"
     - name: Claude Haiku 5.5
       url: https://claude.com/claude-code
-      role: "Reviewed by"
+      role: "reviewer"
 thumbnail:
     image: ./chunk.svg
-    link: ./chunk.svg
     alt: The number stored in chunk 207623
 ---
 

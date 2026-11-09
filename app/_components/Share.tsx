@@ -1,11 +1,11 @@
 'use client';
 import Link from 'next/link';
-import { MouseEvent, ReactNode, useState } from 'react';
+import { type MouseEvent, type ReactNode, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ShareDialog from './ShareDialog';
 
 interface Share {
-	slug: string
+	slug: string;
 }
 function Share({ slug }: Share) {
 	const [jsx, setJsx] = useState<ReactNode>(undefined);
@@ -13,16 +13,21 @@ function Share({ slug }: Share) {
 		e.preventDefault();
 		const shareUrl = new URL('/' + slug, document.location.href);
 		shareUrl.searchParams.set('utm_medium', 'share');
-		setJsx(<ShareDialog
-			href={shareUrl.href}
-			title={document.title}
-			onClose={() => setJsx(undefined)}
-		/>);
+		setJsx(
+			<ShareDialog
+				href={shareUrl.href}
+				title={document.title}
+				onClose={() => setJsx(undefined)}
+			/>,
+		);
 	}
 	return (
 		<>
-			<Link href={'/' + slug + '?utm_source=share-btn&utm_medium=share'} onClick={sharePage} >
-				Share
+			<Link
+				href={'/' + slug + '?utm_source=share-btn&utm_medium=share'}
+				onClick={sharePage}
+			>
+				share
 			</Link>
 			{jsx && createPortal(jsx, document.body)}
 		</>

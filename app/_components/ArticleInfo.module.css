@@ -12,3 +12,8 @@
 .links {
 	composes: listItem;
 }
+@media (max-width: 1023px) {
+	.listItem {
+		margin: 0.25em 0;
+	}
+}

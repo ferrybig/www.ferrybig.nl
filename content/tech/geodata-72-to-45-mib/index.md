@@ -6,10 +6,10 @@ authors:
       url: https://www.ferrybig.nl/
     - name: Claude Opus 5.5
       url: https://claude.com/claude-code
-      role: "Code by"
+      role: "work on project"
     - name: Claude Sonnet 5.5
       url: https://claude.com/claude-code
-      role: "Drafted by"
+      role: "draft"
 ---
 # Two fixes that took the geodata file from 72 MiB to 45 MiB
 

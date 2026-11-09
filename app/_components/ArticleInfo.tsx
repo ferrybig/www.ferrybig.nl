@@ -40,9 +40,9 @@ function ArticleInfo({
 					<strong>Last update:</strong> <Date timestamp={updatedAt} />
 				</p>
 			)}
-			{authors.length > 0 && (
+			{authors.length === 1 && (
 				<p className={classes.listItem}>
-					<strong>Author{authors.length === 1 ? '' : 's'}:</strong>{' '}
+					<strong>Author:</strong>{' '}
 					{authors.map((author, index) => (
 						<span key={author.name}>
 							{index === 0 ? '' : ', '}
@@ -56,25 +56,43 @@ function ArticleInfo({
 					))}
 				</p>
 			)}
+			{authors.length > 0 && ( <>
+				<p className={classes.listItem}>
+					<strong>Author{authors.length === 1 ? '' : 's'}:</strong>{' '}
+				</p>
+				<ul className={classes.listItem}>
+					{authors.map((author) => (
+						<li key={author.name}>
+							{author.url ? (
+								<a href={author.url}>{author.name}</a>
+							) : (
+								author.name
+							)}
+							{author.role && ` (${author.role})`}
+						</li>
+					))}
+				</ul>
+			</>)}
 			<p className={classes.listItem}>
 				<strong>Reading time:</strong> {readingTimeMin}
 				{readingTimeMin !== readingTimeMax ? ` - ${readingTimeMax}` : ''} minute
 				{readingTimeMax !== 1 ? 's' : ''}
 			</p>
 			<p className={classes.listItem}>
-				<strong>Tools:</strong>{' '}
+				<strong>Tools:</strong>
+				{' '}
 				<a
 					href={`https://github.com/ferrybig/www.ferrybig.nl/commits/${GIT_BRANCH}${CONTENT_FOLDER}${originalFile}`}
 				>
 					View source
-				</a>{' '}
+				</a>
+				{' '}
 				<a
 					href={`https://github.com/ferrybig/www.ferrybig.nl/edit/${GIT_BRANCH}${CONTENT_FOLDER}${originalFile}`}
 				>
 					Suggest edit
 				</a>
-			</p>
-			<p className={classes.listItem}>
+				{' '}
 				<Share slug={slug} />
 				{feeds && (
 					<>

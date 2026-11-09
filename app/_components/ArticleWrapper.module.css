@@ -36,6 +36,7 @@
 .tocWrapper {
 	grid-area: toc;
 	align-self: stretch;
+	min-width: 0;
 }
 .markdown {
 	grid-area: content;
