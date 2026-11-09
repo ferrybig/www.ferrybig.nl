@@ -25,9 +25,10 @@ export interface MetaData {
 	readonly children: 'auto' | 'root' | 'content',
 	readonly linkTitle: string,
 	readonly summary: string | null,
-	readonly coAuthors: {
+	readonly authors: {
 		readonly name: string,
 		readonly url: string | null,
+		readonly role: string | null,
 	}[],
 	readonly thumbnail: {
 		readonly alt: string | null,

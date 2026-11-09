@@ -158,6 +158,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 		>
 			<div class="controls" role="toolbar" aria-label="Playback">
 				<button
+					type="button"
 					onClick={reset}
 					title="Reset (Home)"
 					aria-label="Reset"
@@ -166,6 +167,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					⟲
 				</button>
 				<button
+					type="button"
 					onClick={() => jump(previousRecordEnd(trace, k))}
 					title="Previous record (Shift+←)"
 					aria-label="Previous record"
@@ -174,6 +176,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					⏮
 				</button>
 				<button
+					type="button"
 					onClick={() => jump(k - 1)}
 					title="Previous step (←)"
 					aria-label="Previous step"
@@ -182,6 +185,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					◀
 				</button>
 				<button
+					type="button"
 					class="play"
 					onClick={togglePlay}
 					title="Play or pause (Space)"
@@ -190,6 +194,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					{playing ? "⏸" : "▶"}
 				</button>
 				<button
+					type="button"
 					onClick={() => jump(k + 1)}
 					title="Next step (→)"
 					aria-label="Next step"
@@ -198,6 +203,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 					▶|
 				</button>
 				<button
+					type="button"
 					onClick={() => jump(nextRecordEnd(trace, k))}
 					title="Next record (Shift+→)"
 					aria-label="Next record"
@@ -312,7 +318,7 @@ function RealChunk({ trace }: { trace: LiteTrace }) {
 						{busiest.map((slot) => row(slot, slot === now))}
 						{Array.from({ length: LISTED - busiest.length }, (_, i) => (
 							<li key={`blank${i}`} class="keep-space">
-								<code>,</code>
+								<code>-</code>
 							</li>
 						))}
 					</ul>

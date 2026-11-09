@@ -31,9 +31,10 @@ export interface MetaData {
 	readonly children: 'auto' | 'root' | 'content',
 	readonly linkTitle: string,
 	readonly summary: string | null,
-	readonly coAuthors: {
+	readonly authors: {
 		readonly name: string,
 		readonly url: string | null,
+		readonly role: string | null,
 	}[],
 	readonly excludeFromAll: boolean,
 	readonly excludeFromChildren: boolean,
@@ -41,6 +42,7 @@ export interface MetaData {
 	readonly readingTimeMax: number,
 	readonly thumbnail: {
 		readonly alt: string | null,
+		readonly caption: string | null,
 		readonly link: string | null,
 		readonly width: number | null,
 		readonly height: number | null,

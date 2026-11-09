@@ -1,10 +1,11 @@
-import { MetaData } from '@/content';
-import { ComponentType, useMemo } from 'react';
+import Link from 'next/link';
+import { type ComponentType, useMemo } from 'react';
 import Image from '@/_components/Image';
+import type { MetaData } from '@/content';
+import classes from './ArticleMarkdown.module.css';
 import Heading from './Heading';
 import HtmlPreview from './HtmlPreview';
-import Link from 'next/link';
-import classes from './ArticleMarkdown.module.css';
+
 function isRelative(href: string): boolean {
 	return !/^(?:[a-z]+:)?\/\//i.test(href);
 }
@@ -12,15 +13,21 @@ function isRelative(href: string): boolean {
 type Components = Record<string, ComponentType<any>>;
 type NeededMetadata = Pick<MetaData, 'thumbnail'>;
 function makeComponents({ thumbnail }: NeededMetadata): Components {
-	const components: Components = new Proxy({}, {
-		get(target, prop) {
-			return prop in target ? (target as any)[prop] : prop;
+	const components: Components = new Proxy(
+		{},
+		{
+			get(target, prop) {
+				return prop in target ? (target as any)[prop] : prop;
+			},
 		},
-	});
+	);
 	function define(name: string, factory: ComponentType<any>) {
 		components[name] = factory;
 	}
-	function compose(name: string, factory: (Base: ComponentType<any>) => ComponentType<any>) {
+	function compose(
+		name: string,
+		factory: (Base: ComponentType<any>) => ComponentType<any>,
+	) {
 		components[name] = factory(components[name]);
 	}
 
@@ -62,56 +69,69 @@ function makeComponents({ thumbnail }: NeededMetadata): Components {
 	});
 	define('HtmlPreview', HtmlPreview);
 
-	compose('h1', (Base) => function H1WithThumbnail(props) {
-		return (
-			<>
-				{thumbnail ? (
-					thumbnail.link ? (
-						<a
-							href={thumbnail.link}
-							className={classes.hero}
-							style={{ backgroundImage: `url('${thumbnail.image.blurDataURL}` }}
-						>
-							<Image
-								src={thumbnail.image}
-								width={939}
-								height={528}
-								alt={thumbnail.alt ?? ''}
-								decoding="sync"
-								fetchPriority="high"
-							/>
-							{thumbnail.alt && <span className={classes.caption}>{thumbnail.alt}</span>}
-						</a>
-					) : (
-						<div
-							className={classes.hero}
-							style={{ backgroundImage: `url('${thumbnail.image.blurDataURL}')` }}
-						>
-							<Image
-								src={thumbnail.image}
-								width={939}
-								height={528}
-								alt={thumbnail.alt ?? ''}
-								decoding="sync"
-								fetchPriority="high"
-							/>
-						</div>
-					)
-				) : null}
-				<Base {...props} />
-			</>
-		);
-	});
+	compose(
+		'h1',
+		(Base) =>
+			function H1WithThumbnail(props) {
+				return (
+					<>
+						{thumbnail ? (
+							thumbnail.link ? (
+								<a
+									href={thumbnail.link}
+									className={classes.hero}
+									style={{
+										backgroundImage: `url('${thumbnail.image.blurDataURL}`,
+									}}
+								>
+									<Image
+										src={thumbnail.image}
+										width={939}
+										height={528}
+										alt={thumbnail.alt ?? ''}
+										decoding="sync"
+										fetchPriority="high"
+									/>
+									{thumbnail.caption && (
+										<span className={classes.caption}>{thumbnail.caption}</span>
+									)}
+								</a>
+							) : (
+								<div
+									className={classes.hero}
+									style={{
+										backgroundImage: `url('${thumbnail.image.blurDataURL}')`,
+									}}
+								>
+									<Image
+										src={thumbnail.image}
+										width={939}
+										height={528}
+										alt={thumbnail.alt ?? ''}
+										decoding="sync"
+										fetchPriority="high"
+									/>
+								</div>
+							)
+						) : null}
+						<Base {...props} />
+					</>
+				);
+			},
+	);
 	return components;
 }
 
 interface ArticleMarkdown {
-	factory: (props: { components: Components }) => any,
-	metadata: NeededMetadata,
+	factory: (props: { components: Components }) => any;
+	metadata: NeededMetadata;
 }
 
-function ArticleMarkdown ({ factory, metadata: {thumbnail} }: ArticleMarkdown) {
-	const components = useMemo(() => makeComponents({thumbnail}), [thumbnail]);
+function ArticleMarkdown({
+	factory,
+	metadata: { thumbnail },
+}: ArticleMarkdown) {
+	const components = useMemo(() => makeComponents({ thumbnail }), [thumbnail]);
 	return factory({ components });
 }
 
