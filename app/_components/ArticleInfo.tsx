@@ -56,7 +56,7 @@ function ArticleInfo({
 					))}
 				</p>
 			)}
-			{authors.length > 0 && ( <>
+			{authors.length > 1 && ( <>
 				<p className={classes.listItem}>
 					<strong>Author{authors.length === 1 ? '' : 's'}:</strong>{' '}
 				</p>
